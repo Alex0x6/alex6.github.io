@@ -1,0 +1,108 @@
+---
+// src/layouts/TutorialLayout.astro
+// Layout for individual tutorial/article pages
+
+import BaseLayout       from './BaseLayout.astro';
+import GiscusComments   from '../components/GiscusComments.astro';
+
+interface Props {
+  title:       string;
+  description: string;
+  date:        Date;
+  locale?:     string;
+  tags?:       string[];
+  cover?:      string;
+}
+
+const {
+  title,
+  description,
+  date,
+  locale = 'fr',
+  tags   = [],
+  cover,
+} = Astro.props;
+
+const formattedDate = date.toLocaleDateString(
+  locale === 'fr' ? 'fr-FR' : 'en-US',
+  { year: 'numeric', month: 'long', day: 'numeric' }
+);
+
+const backHref  = locale === 'fr' ? '/fr/tutoriels/' : '/en/tutorials/';
+const backLabel = locale === 'fr' ? '← Tutoriels' : '← Tutorials';
+---
+
+<BaseLayout {title} {description} {locale} image={cover}>
+
+  <!-- Back link -->
+  <a
+    href={backHref}
+    class="
+      inline-flex items-center gap-1
+      text-sm text-[var(--color-muted)]
+      hover:text-brand-600 dark:hover:text-brand-400
+      transition-colors mb-8
+    "
+  >
+    {backLabel}
+  </a>
+
+  <!-- Article header -->
+  <header class="mb-8">
+    {tags.length > 0 && (
+      <div class="flex flex-wrap gap-2 mb-4">
+        {tags.map((tag) => (
+          <span class="
+            text-xs font-medium px-2.5 py-1 rounded-full
+            bg-brand-50 dark:bg-brand-900/30
+            text-brand-700 dark:text-brand-300
+          ">
+            {tag}
+          </span>
+        ))}
+      </div>
+    )}
+
+    <h1 class="
+      text-3xl sm:text-4xl font-bold
+      text-gray-900 dark:text-white
+      leading-tight mb-3
+    ">
+      {title}
+    </h1>
+
+    <p class="text-[var(--color-muted)] text-sm">
+      <time datetime={date.toISOString()}>{formattedDate}</time>
+    </p>
+  </header>
+
+  <!-- Cover image -->
+  {cover && (
+    <img
+      src={cover}
+      alt=""
+      class="w-full rounded-2xl mb-10 aspect-video object-cover"
+      loading="eager"
+      decoding="async"
+    />
+  )}
+
+  <!-- Article body – @tailwindcss/typography prose styles -->
+  <article class="
+    prose prose-gray
+    dark:prose-dark
+    max-w-none
+    prose-headings:scroll-mt-20
+    prose-a:text-brand-600 dark:prose-a:text-brand-400
+    prose-code:before:content-none prose-code:after:content-none
+    prose-code:bg-gray-100 dark:prose-code:bg-gray-800
+    prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+    prose-code:text-sm prose-code:font-mono
+  ">
+    <slot />
+  </article>
+
+  <!-- Comments -->
+  <GiscusComments lang={locale} />
+
+</BaseLayout>

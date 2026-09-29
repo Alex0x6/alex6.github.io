@@ -1,0 +1,43 @@
+---
+// src/components/LanguageSwitcher.astro
+// Switches between /fr/... and /en/... preserving the current slug
+
+interface Props {
+  /** Current locale: 'fr' | 'en' */
+  currentLocale: string;
+}
+
+const { currentLocale } = Astro.props;
+
+// Build alternate URL by swapping the locale prefix
+const path      = Astro.url.pathname;           // e.g. /fr/tutoriels/intro-proxmox
+const otherLang = currentLocale === 'fr' ? 'en' : 'fr';
+const otherPath = path.replace(
+  new RegExp(`^/(${currentLocale})`),
+  `/${otherLang}`,
+);
+
+const labels: Record<string, { current: string; other: string; flag: string }> = {
+  fr: { current: 'FR', other: 'EN', flag: '🇬🇧' },
+  en: { current: 'EN', other: 'FR', flag: '🇫🇷' },
+};
+
+const { flag, other } = labels[currentLocale] ?? labels['fr'];
+---
+
+<a
+  href={otherPath}
+  aria-label={`Passer en ${other}`}
+  class="
+    flex items-center gap-1.5
+    text-sm font-medium
+    text-gray-600 dark:text-gray-300
+    hover:text-gray-900 dark:hover:text-white
+    transition-colors duration-200
+    rounded-lg px-2 py-1
+    hover:bg-gray-100 dark:hover:bg-gray-800
+  "
+>
+  <span aria-hidden="true">{flag}</span>
+  <span>{other}</span>
+</a>

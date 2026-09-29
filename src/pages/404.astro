@@ -1,0 +1,54 @@
+---
+// src/pages/404.astro
+// Custom 404 page
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Try to detect locale from URL – fallback to fr
+const locale = Astro.url.pathname.startsWith('/en') ? 'en' : 'fr';
+
+const text = {
+  fr: {
+    title: 'Page introuvable',
+    heading: '404',
+    message: 'Oups ! Cette page n\'existe pas ou a été déplacée.',
+    back: '← Retour à l\'accueil',
+    href: '/fr/',
+  },
+  en: {
+    title: 'Page not found',
+    heading: '404',
+    message: 'Oops! This page doesn\'t exist or has been moved.',
+    back: '← Back to home',
+    href: '/en/',
+  },
+}[locale];
+---
+
+<BaseLayout
+  title={text.title}
+  description={text.message}
+  locale={locale}
+>
+  <div class="flex flex-col items-center justify-center text-center py-24 fade-in">
+    <p class="text-8xl font-black text-brand-200 dark:text-brand-900 select-none mb-4">
+      {text.heading}
+    </p>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+      {text.title}
+    </h1>
+    <p class="text-[var(--color-muted)] mb-8">{text.message}</p>
+    <a
+      href={text.href}
+      class="
+        inline-flex items-center gap-2
+        bg-brand-600 hover:bg-brand-700
+        text-white font-medium
+        px-6 py-3 rounded-xl
+        transition-colors duration-200
+      "
+    >
+      {text.back}
+    </a>
+  </div>
+</BaseLayout>

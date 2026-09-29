@@ -1,0 +1,101 @@
+---
+// src/components/TutorialCard.astro
+// Card component for tutorial listing pages
+
+interface Props {
+  title:       string;
+  description: string;
+  date:        Date;
+  slug:        string;
+  locale:      string;
+  tags?:       string[];
+  cover?:      string;
+}
+
+const { title, description, date, slug, locale, tags = [], cover } = Astro.props;
+
+const routePrefix = locale === 'fr' ? 'tutoriels' : 'tutorials';
+const href = `/${locale}/${routePrefix}/${slug}/`;
+
+const formattedDate = date.toLocaleDateString(
+  locale === 'fr' ? 'fr-FR' : 'en-US',
+  { year: 'numeric', month: 'long', day: 'numeric' }
+);
+---
+
+<article class="
+  group
+  flex flex-col
+  rounded-2xl
+  border border-[var(--color-border)]
+  bg-[var(--color-surface)]
+  overflow-hidden
+  hover:border-brand-500/50
+  hover:shadow-lg hover:shadow-brand-500/5
+  transition-all duration-300
+  fade-in
+">
+  {cover && (
+    <a href={href} class="block overflow-hidden aspect-video" tabindex="-1" aria-hidden="true">
+      <img
+        src={cover}
+        alt=""
+        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        loading="lazy"
+        decoding="async"
+      />
+    </a>
+  )}
+
+  <div class="flex flex-col flex-1 p-5 sm:p-6">
+    <!-- Tags -->
+    {tags.length > 0 && (
+      <div class="flex flex-wrap gap-1.5 mb-3">
+        {tags.slice(0, 3).map((tag) => (
+          <span class="
+            text-xs font-medium px-2 py-0.5 rounded-full
+            bg-brand-50 dark:bg-brand-900/30
+            text-brand-700 dark:text-brand-300
+          ">
+            {tag}
+          </span>
+        ))}
+      </div>
+    )}
+
+    <!-- Title -->
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 leading-snug">
+      <a
+        href={href}
+        class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors duration-200"
+      >
+        {title}
+      </a>
+    </h2>
+
+    <!-- Description -->
+    <p class="text-sm text-[var(--color-muted)] flex-1 line-clamp-3">{description}</p>
+
+    <!-- Footer -->
+    <div class="mt-4 flex items-center justify-between">
+      <time
+        datetime={date.toISOString()}
+        class="text-xs text-[var(--color-muted)]"
+      >
+        {formattedDate}
+      </time>
+      <a
+        href={href}
+        class="
+          text-sm font-medium
+          text-brand-600 dark:text-brand-400
+          hover:underline
+          inline-flex items-center gap-1
+        "
+        aria-label={`Lire : ${title}`}
+      >
+        {locale === 'fr' ? 'Lire →' : 'Read →'}
+      </a>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,36 @@
+---
+// src/pages/fr/tutoriels/[slug].astro
+// Dynamic routes for individual French tutorial articles
+
+import { getCollection, getEntry } from 'astro:content';
+import TutorialLayout from '../../../layouts/TutorialLayout.astro';
+
+// Generate a static route for every French tutorial
+export async function getStaticPaths() {
+  const tutoriels = await getCollection('tutoriels', ({ data }) =>
+    data.lang === 'fr' && !data.draft
+  );
+
+  return tutoriels.map((entry) => ({
+    // Remove the "fr/" prefix that comes from the folder structure
+    params: { slug: entry.slug.replace('fr/', '') },
+    props:  { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+const { title, description, date, tags, cover } = entry.data;
+---
+
+<TutorialLayout
+  {title}
+  {description}
+  {date}
+  locale="fr"
+  {tags}
+  cover={cover}
+>
+  <Content />
+</TutorialLayout>

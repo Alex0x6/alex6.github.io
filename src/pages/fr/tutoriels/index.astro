@@ -1,0 +1,54 @@
+---
+// src/pages/fr/tutoriels/index.astro
+// Page de liste des tutoriels en français
+
+import { getCollection }  from 'astro:content';
+import BaseLayout          from '../../../layouts/BaseLayout.astro';
+import TutorialCard        from '../../../components/TutorialCard.astro';
+
+// Fetch only French tutorials, sorted by date desc, excluding drafts
+const allTutoriels = await getCollection('tutoriels', ({ data }) =>
+  data.lang === 'fr' && !data.draft
+);
+
+const tutoriels = allTutoriels.sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+---
+
+<BaseLayout
+  title="Tutoriels"
+  description="Tous mes tutoriels techniques : Big Data, Proxmox, Linux, homelab et plus."
+  locale="fr"
+>
+
+  <header class="mb-10 fade-in">
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
+      Tutoriels
+    </h1>
+    <p class="text-[var(--color-muted)]">
+      {tutoriels.length} article{tutoriels.length !== 1 ? 's' : ''} publié{tutoriels.length !== 1 ? 's' : ''}
+    </p>
+  </header>
+
+  {tutoriels.length === 0 ? (
+    <p class="text-[var(--color-muted)] text-center py-16">
+      Aucun tutoriel publié pour l'instant. Revenez bientôt !
+    </p>
+  ) : (
+    <div class="grid gap-6 sm:grid-cols-2">
+      {tutoriels.map((tuto) => (
+        <TutorialCard
+          title={tuto.data.title}
+          description={tuto.data.description}
+          date={tuto.data.date}
+          slug={tuto.slug.replace('fr/', '')}
+          locale="fr"
+          tags={tuto.data.tags}
+          cover={tuto.data.cover}
+        />
+      ))}
+    </div>
+  )}
+
+</BaseLayout>
