@@ -1,0 +1,84 @@
+---
+// src/layouts/BaseLayout.astro
+// Root layout – used by ALL pages. Includes SEOHead, Header, Footer, ViewTransitions.
+
+import { ViewTransitions } from 'astro:transitions';
+import SEOHead   from '../components/SEOHead.astro';
+import Header    from '../components/Header.astro';
+import '../styles/global.css';
+
+interface Props {
+  title:       string;
+  description: string;
+  locale?:     string;
+  image?:      string;
+}
+
+const {
+  title,
+  description,
+  locale       = 'fr',
+  image,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={locale} class="scroll-smooth">
+  <head>
+    <SEOHead
+      title={title}
+      description={description}
+      image={image}
+    />
+    <!-- Astro View Transitions (SPA-like page transitions) -->
+    <ViewTransitions />
+
+    <!-- Inline script to prevent FOUC before CSS loads -->
+    <script is:inline>
+      (function () {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored === 'dark' || (!stored && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+
+  <body class="flex flex-col min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+
+    <Header currentLocale={locale} />
+
+    <!-- Main content -->
+    <main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="
+      border-t border-[var(--color-border)]
+      py-6 px-4
+      text-center text-xs text-[var(--color-muted)]
+    ">
+      <p>
+        © {new Date().getFullYear()} Alex6 —
+        Construit avec <a
+          href="https://astro.build"
+          class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+          target="_blank" rel="noopener noreferrer"
+        >Astro</a> &amp;
+        <a
+          href="https://tailwindcss.com"
+          class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+          target="_blank" rel="noopener noreferrer"
+        >Tailwind</a>.
+        <a
+          href="https://github.com/Alex0x6/alex6.github.io"
+          class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors ml-2"
+          target="_blank" rel="noopener noreferrer"
+        >GitHub ↗</a>
+      </p>
+    </footer>
+
+  </body>
+</html>

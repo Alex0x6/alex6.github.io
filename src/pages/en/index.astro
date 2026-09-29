@@ -1,0 +1,98 @@
+---
+// src/pages/en/index.astro
+// English homepage
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Alex6 — Portfolio"
+  description="Alex6's personal portfolio — Big Data, homelab, systems and infra tutorials."
+  locale="en"
+>
+
+  <!-- Hero -->
+  <section class="text-center py-16 sm:py-24 fade-in">
+    <p class="text-brand-600 dark:text-brand-400 text-sm font-semibold tracking-widest uppercase mb-4">
+      Welcome
+    </p>
+    <h1 class="text-4xl sm:text-6xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
+      Hi, I'm <span class="text-brand-600 dark:text-brand-400">Alex6</span>
+    </h1>
+    <p class="text-lg sm:text-xl text-[var(--color-muted)] max-w-2xl mx-auto mb-10 leading-relaxed">
+      Passionate about systems, Big Data, and virtualisation. I share tutorials,
+      homelab experiments and projects here.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a
+        href="/en/tutorials/"
+        class="
+          inline-flex items-center justify-center gap-2
+          bg-brand-600 hover:bg-brand-700
+          text-white font-medium
+          px-6 py-3 rounded-xl
+          transition-colors duration-200
+          shadow-lg shadow-brand-500/20
+        "
+      >
+        Browse tutorials →
+      </a>
+      <a
+        href="https://github.com/alex6"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="
+          inline-flex items-center justify-center gap-2
+          border border-[var(--color-border)]
+          text-[var(--color-text)] font-medium
+          px-6 py-3 rounded-xl
+          hover:bg-[var(--color-surface)]
+          transition-colors duration-200
+        "
+      >
+        GitHub ↗
+      </a>
+    </div>
+  </section>
+
+  <hr class="border-[var(--color-border)] my-4" />
+
+  <section class="py-12">
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">
+      What you'll find here
+    </h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[
+        {
+          icon: '📖',
+          title: 'Technical tutorials',
+          desc: 'Step-by-step guides on Proxmox, Linux, Big Data, Kubernetes and more.',
+        },
+        {
+          icon: '🏠',
+          title: 'Homelab projects',
+          desc: 'Architecture, configs and lessons learned from my homelab setup.',
+        },
+        {
+          icon: '🛠️',
+          title: 'Tools & Scripts',
+          desc: 'Useful scripts, automation and ready-to-use configurations.',
+        },
+      ].map(({ icon, title, desc }) => (
+        <div class="
+          p-6 rounded-2xl
+          border border-[var(--color-border)]
+          bg-[var(--color-surface)]
+          hover:border-brand-500/40
+          hover:shadow-md hover:shadow-brand-500/5
+          transition-all duration-300
+        ">
+          <div class="text-3xl mb-3">{icon}</div>
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-2">{title}</h3>
+          <p class="text-sm text-[var(--color-muted)]">{desc}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+</BaseLayout>

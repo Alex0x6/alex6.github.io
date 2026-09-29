@@ -1,0 +1,73 @@
+---
+// src/components/GiscusComments.astro
+// Zero-backend comments powered by GitHub Discussions via Giscus
+// https://giscus.app – generate your own config at that URL
+
+interface Props {
+  /** Current page locale for giscus UI language */
+  lang?: string;
+}
+
+const { lang = 'fr' } = Astro.props;
+
+// ── 🔧 CONFIGURE YOUR VALUES HERE ────────────────────────────────────────────
+// Visit https://giscus.app and follow the steps to get these values.
+const REPO          = 'Alex0x6/alex6.github.io';   // "owner/repo"
+const REPO_ID       = 'YOUR_REPO_ID';              // R_kgDO...
+const CATEGORY      = 'Announcements';
+const CATEGORY_ID   = 'YOUR_CATEGORY_ID';          // DIC_kwDO...
+// ─────────────────────────────────────────────────────────────────────────────
+
+const giscusLang = lang === 'fr' ? 'fr' : 'en';
+---
+
+<!-- Giscus container -->
+<section class="mt-12 pt-8 border-t border-[var(--color-border)]">
+  <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-6">
+    {lang === 'fr' ? 'Commentaires' : 'Comments'}
+  </h2>
+
+  <div id="giscus-container">
+    <script
+      is:inline
+      src="https://giscus.app/client.js"
+      data-repo={REPO}
+      data-repo-id={REPO_ID}
+      data-category={CATEGORY}
+      data-category-id={CATEGORY_ID}
+      data-mapping="pathname"
+      data-strict="0"
+      data-reactions-enabled="1"
+      data-emit-metadata="0"
+      data-input-position="top"
+      data-theme="preferred_color_scheme"
+      data-lang={giscusLang}
+      data-loading="lazy"
+      crossorigin="anonymous"
+      async
+    ></script>
+  </div>
+</section>
+
+<script is:inline>
+  // Sync giscus theme when dark mode toggles
+  function syncGiscusTheme() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const theme  = isDark ? 'dark' : 'light';
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (iframe) {
+      iframe.contentWindow?.postMessage(
+        { giscus: { setConfig: { theme } } },
+        'https://giscus.app'
+      );
+    }
+  }
+
+  // Run on theme toggle clicks
+  document.getElementById('theme-toggle')?.addEventListener('click', () => {
+    // Small delay so the class has been toggled first
+    setTimeout(syncGiscusTheme, 50);
+  });
+
+  document.addEventListener('astro:after-swap', syncGiscusTheme);
+</script>

@@ -1,0 +1,11 @@
+---
+// src/pages/index.astro
+// Root redirect: / → /fr/ (default locale)
+
+// Astro i18n with prefixDefaultLocale:true redirects automatically,
+// but an explicit redirect ensures compatibility with all hosts.
+---
+
+<meta http-equiv="refresh" content="0; url=/fr/" />
+<link rel="canonical" href="/fr/" />
+<p>Redirection vers <a href="/fr/">/fr/</a>…</p>

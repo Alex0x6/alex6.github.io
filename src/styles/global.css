@@ -1,0 +1,72 @@
+/* src/styles/global.css
+   Imported once in the root BaseLayout so Tailwind directives are processed. */
+
+/* ── Google Fonts — @import MUST come first per CSS spec ────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base tokens ────────────────────────────────────────────────────────────── */
+@layer base {
+  :root {
+    --color-bg:      theme('colors.white');
+    --color-surface: theme('colors.gray.50');
+    --color-text:    theme('colors.gray.900');
+    --color-muted:   theme('colors.gray.500');
+    --color-border:  theme('colors.gray.200');
+  }
+
+  .dark {
+    --color-bg:      theme('colors.gray.950');
+    --color-surface: theme('colors.gray.900');
+    --color-text:    theme('colors.gray.100');
+    --color-muted:   theme('colors.gray.400');
+    --color-border:  theme('colors.gray.800');
+  }
+
+  html {
+    @apply scroll-smooth;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    @apply antialiased min-h-screen transition-colors duration-300;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  /* Focus rings */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-[var(--color-bg)] rounded-sm;
+  }
+}
+
+/* ── Utility classes ─────────────────────────────────────────────────────────── */
+@layer components {
+  /* Fade-in animation for View Transitions */
+  .fade-in {
+    animation: fadeIn 0.4s ease both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Shiki dual-theme support */
+  .astro-code {
+    /* light is default – applied via .shiki class */
+  }
+  .dark .astro-code {
+    background-color: transparent !important;
+  }
+  /* Shiki dual-theme: swap spans based on dark class */
+  .shiki span.light { display: inline; }
+  .shiki span.dark  { display: none; }
+  .dark .shiki span.light { display: none; }
+  .dark .shiki span.dark  { display: inline; }
+}

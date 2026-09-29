@@ -1,0 +1,53 @@
+---
+// src/pages/en/tutorials/index.astro
+// English tutorials listing page
+
+import { getCollection } from 'astro:content';
+import BaseLayout        from '../../../layouts/BaseLayout.astro';
+import TutorialCard      from '../../../components/TutorialCard.astro';
+
+const allTutorials = await getCollection('tutoriels', ({ data }) =>
+  data.lang === 'en' && !data.draft
+);
+
+const tutorials = allTutorials.sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+---
+
+<BaseLayout
+  title="Tutorials"
+  description="All my technical tutorials: Big Data, Proxmox, Linux, homelab and more."
+  locale="en"
+>
+
+  <header class="mb-10 fade-in">
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
+      Tutorials
+    </h1>
+    <p class="text-[var(--color-muted)]">
+      {tutorials.length} published article{tutorials.length !== 1 ? 's' : ''}
+    </p>
+  </header>
+
+  {tutorials.length === 0 ? (
+    <p class="text-[var(--color-muted)] text-center py-16">
+      No tutorials published yet. Check back soon!
+    </p>
+  ) : (
+    <div class="grid gap-6 sm:grid-cols-2">
+      {tutorials.map((tuto) => (
+        <TutorialCard
+          title={tuto.data.title}
+          description={tuto.data.description}
+          date={tuto.data.date}
+          slug={tuto.slug.replace('en/', '')}
+          locale="en"
+          tags={tuto.data.tags}
+          cover={tuto.data.cover}
+        />
+      ))}
+    </div>
+  )}
+
+</BaseLayout>

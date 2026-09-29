@@ -1,0 +1,98 @@
+---
+// src/components/Header.astro
+// Minimal sticky header: Logo · Nav · LanguageSwitcher · ThemeToggle
+
+import ThemeToggle      from './ThemeToggle.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+interface Props {
+  currentLocale: string;
+}
+
+const { currentLocale } = Astro.props;
+const locale = currentLocale ?? 'fr';
+
+// Nav links per locale
+const nav = {
+  fr: [
+    { href: `/${locale}/`,            label: 'Accueil'    },
+    { href: `/${locale}/tutoriels/`,  label: 'Tutoriels'  },
+  ],
+  en: [
+    { href: `/${locale}/`,            label: 'Home'       },
+    { href: `/${locale}/tutorials/`,  label: 'Tutorials'  },
+  ],
+}[locale] ?? [];
+---
+
+<header class="
+  sticky top-0 z-50
+  border-b border-[var(--color-border)]
+  bg-[var(--color-bg)]/80
+  backdrop-blur-md
+  transition-colors duration-300
+">
+  <div class="
+    max-w-4xl mx-auto
+    flex items-center justify-between
+    px-4 sm:px-6
+    h-14
+  ">
+
+    <!-- ── Logo ───────────────────────────────────────────────────────────── -->
+    <a
+      href={`/${locale}/`}
+      class="
+        font-bold text-lg tracking-tight
+        text-gray-900 dark:text-white
+        hover:text-brand-600 dark:hover:text-brand-400
+        transition-colors duration-200
+      "
+    >
+      Alex6
+    </a>
+
+    <!-- ── Nav + controls ─────────────────────────────────────────────────── -->
+    <nav class="flex items-center gap-1 sm:gap-2">
+      {nav.map(({ href, label }) => (
+        <a
+          href={href}
+          class="
+            hidden sm:inline-flex
+            text-sm font-medium
+            px-3 py-1.5 rounded-lg
+            text-gray-600 dark:text-gray-300
+            hover:text-gray-900 dark:hover:text-white
+            hover:bg-gray-100 dark:hover:bg-gray-800
+            transition-colors duration-200
+            [&.active]:text-brand-600 dark:[&.active]:text-brand-400
+          "
+        >
+          {label}
+        </a>
+      ))}
+
+      <div class="w-px h-5 bg-[var(--color-border)] mx-1 hidden sm:block" aria-hidden="true" />
+
+      <LanguageSwitcher currentLocale={locale} />
+      <ThemeToggle />
+    </nav>
+
+  </div>
+</header>
+
+<script>
+  // Highlight active nav link
+  function setActiveLinks() {
+    const path = location.pathname;
+    document.querySelectorAll('header nav a').forEach((el) => {
+      const a = el as HTMLAnchorElement;
+      const isActive = path === a.pathname ||
+        (a.pathname !== '/' && path.startsWith(a.pathname));
+      a.classList.toggle('active', isActive);
+      a.setAttribute('aria-current', isActive ? 'page' : 'false');
+    });
+  }
+  setActiveLinks();
+  document.addEventListener('astro:after-swap', setActiveLinks);
+</script>

@@ -1,0 +1,56 @@
+---
+// src/components/SEOHead.astro
+// Dynamic <head> meta tags for SEO
+
+interface Props {
+  title: string;
+  description: string;
+  /** Absolute URL of the OG image (optional) */
+  image?: string;
+  /** Canonical URL override (defaults to Astro.url) */
+  canonicalUrl?: string;
+}
+
+const {
+  title,
+  description,
+  image,
+  canonicalUrl,
+} = Astro.props;
+
+const siteUrl   = Astro.site?.href.replace(/\/$/, '') ?? '';
+const canonical = canonicalUrl ?? Astro.url.href;
+const ogImage   = image ?? `${siteUrl}/og-default.png`;
+const fullTitle = title === 'Alex6'
+  ? 'Alex6 — Portfolio'
+  : `${title} | Alex6`;
+---
+
+<!-- Primary -->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description"        content={description} />
+<link  rel="canonical"          href={canonical} />
+<link  rel="icon"               href="/favicon.ico" sizes="any" />
+<link  rel="icon"               href="/favicon.svg" type="image/svg+xml" />
+<link  rel="apple-touch-icon"   href="/apple-touch-icon.png" />
+
+<!-- Title -->
+<title>{fullTitle}</title>
+
+<!-- Open Graph -->
+<meta property="og:type"        content="website" />
+<meta property="og:url"         content={canonical} />
+<meta property="og:title"       content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image"       content={ogImage} />
+
+<!-- Twitter Card -->
+<meta name="twitter:card"        content="summary_large_image" />
+<meta name="twitter:title"       content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image"       content={ogImage} />
+
+<!-- Theme color (respects OS preference) -->
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+<meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#030712" />
