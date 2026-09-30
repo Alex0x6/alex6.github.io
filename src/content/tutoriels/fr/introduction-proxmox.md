@@ -1,85 +1,213 @@
+
 ---
-# Exemple de tutoriel en français
 # Chemin : src/content/tutoriels/fr/introduction-proxmox.md
 
-title: "Introduction à Proxmox VE : Installer un homelab"
+title: "Passtrough Nvidia GPU Proxmox without igpu"
 date: 2025-06-15
-description: "Guide pas à pas pour installer Proxmox VE sur du matériel bare-metal et configurer vos premières VMs et conteneurs LXC."
-# cover: "/images/proxmox-gui.png"   ← décommentez quand l'image est dans public/images/
+description: "Guide pour faire des passtrough gpu sur proxmox"
+cover: "/images/proxmox-gui.png"   ← décommentez quand l'image est dans public/images/
 tags: ["proxmox", "virtualisation", "homelab", "linux"]
 lang: fr
 draft: false
 ---
 
-## Pourquoi Proxmox VE ?
+## Pourquoi ce tuto ?
 
-[Proxmox VE](https://www.proxmox.com/) est une plateforme de virtualisation open-source qui combine **KVM** (machines virtuelles complètes) et **LXC** (conteneurs légers) dans une interface web unifiée.
+J'ai personnellement passé 8h à chercher pourquoi est ce que j'avais un écran noir au boot de la vm et donc je veux partager mon expérience pour vous faire gagner du temps.
 
-Ses avantages pour un homelab :
-- **Gratuit** (sans abonnement obligatoire)
-- Interface web complète
-- Support des clusters HA
-- Snapshots & backups intégrés
+## Mon utilisation
 
----
+J'utilise les entrées customs du grub avec un service et un script pour pouvoir lancer ma vm gaming (W11) et ma vm de dev (Omarchy) automatiquement.
 
-## Architecture de la solution
+## Limites de connaissances
 
-Voici l'architecture que nous allons mettre en place :
+Je ne sais pas si ce tuto fonctionne sur les carte inférieurs à la série 50xx de nvidia.
+Si vous avez la possibilité de tester et de faire un retour en commentaire ou discord serait avec un immense plaisir que je partagerais les résultats.
 
-```
-[Serveur physique]
- └── Proxmox VE
-      ├── VM 1 : TrueNAS (stockage NAS)
-      ├── VM 2 : OPNsense (pare-feu)
-      └── CT 1 : Nginx Proxy Manager (reverse proxy)
-```
+## Explication problèmes
 
-Vous pouvez aussi utiliser un schéma :
+Le probleme c'est que sans igpu ou si vous avez l'ecran branché sur la carte graphique proxmox va utiliser la carte graphique pour afficher la console avec marqué l'ip de connection et empecher de pouvoir utiliser la carte.
 
-![Architecture Proxmox](/images/proxmox-gui.png)
+## Equipements ?
+
+Sur ce tuto j'ai utilisé une rtx 5070 ti, un i5 14600kf et 64gb de ram.
+
+
+## Prérequis ?
+
+Un Proxmox
 
 ---
 
-## Étape 1 : Téléchargement et création de la clé USB
+## Étape 1 : Installer l'os de votre choix
 
-Téléchargez l'ISO depuis [proxmox.com/downloads](https://www.proxmox.com/en/downloads) puis créez une clé USB bootable :
-
-```bash
-# Avec dd (Linux/macOS) – remplacez /dev/sdX par votre périphérique USB
-sudo dd if=proxmox-ve_8.x-x.iso of=/dev/sdX bs=1M status=progress conv=fsync
-```
-
-> **⚠️ Attention :** cette commande efface intégralement le contenu de `/dev/sdX`. Vérifiez bien la cible avant d'exécuter.
+Installer l'os sans ajouter encore le carte graphique à la vm.
+Configuré la machine en q35.
+Personellement, pour installer l'os je garde le display par défaut et je configure l'os par la console de proxmox.
 
 ---
 
-## Étape 2 : Installation
+## Étape 2 : Configurer le grub
+> **⚠️ Attention :** les scripts sont vibes codés.
 
-1. Démarrez sur la clé USB (F11 / F12 au POST)
-2. Choisissez **Install Proxmox VE (Graphical)**
-3. Sélectionnez le disque de destination (ZFS recommandé pour le mirroring)
-4. Configurez réseau, mot de passe root, email d'alerte
-5. Finalisez et rebootez
+Ici, comme vous pouvez le voir à chaque update du noyau la version se mettra à jour automatiquement dans le grub.
+J'utilise 40_custom car je rajoute des entrées au grub si vous voulez que cela s'applique directement au boot grub de base utiliser le fichier 
 
----
 
-## Étape 3 : Première connexion
+J'ai rajouté pve_autostart pour pouvoir ensuite lancer automatiquement la vm correspondant à l'id.
 
-Accédez à l'interface web :
+Vous devez changer : 
+```--set=root 1791833e-9ce2-4cde-aed8-4f554e9bc5b9``` pour qu'il corresponde à votre sortie de la commande : ``` lsblk -o NAME,FSTYPE,UUID,MOUNTPOINT ```
+![blkid](/public/images/tuto/gpu-passtrough/lsblk.jpg)
 
+ Ainsi que ```video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9```
+ Pour obtenir les bons ID utliser la commande : ``` lspci -nn | grep -E "VGA|3D|Audio" ```
+
+ Si vous etes sur un processeur amd vous devrez changer.
+
+ ```intel_iommu=on``` par ```amd_iommu=on```
+
+ ![lspci](/public/images/tuto/gpu-passtrough/lspci.jpg)
+
+ # /etc/grub.d/40_custom 
 ```
-https://<IP_DU_SERVEUR>:8006
+#!/bin/sh
+
+# Script dynamique pour trouver le noyau
+
+LATEST_KERNEL=$(ls -1 /boot/vmlinuz-*pve 2>/dev/null | sort -V | tail -n 1 | sed 's|^/boot/||')
+
+LATEST_INITRD=$(ls -1 /boot/initrd.img-*pve 2>/dev/null | sort -V | tail -n 1 | sed 's|^/boot/||')
+
+if [ -z "$LATEST_KERNEL" ]; then exit 0; fi
+
+cat << EOF
+
+# --- PROFIL 1 : GAMING (Passe le GPU et démarre la VM 101) ---
+
+menuentry 'Proxmox VE - GAMING (VM 101)' --class proxmox --class gnu-linux --class gnu --class os {
+
+load_video
+
+insmod gzio
+
+insmod part_gpt
+
+insmod lvm
+
+insmod ext2
+
+search --no-floppy --fs-uuid --set=root 1791833e-9ce2-4cde-aed8-4f554e9bc5b9
+
+linux /boot/\${LATEST_KERNEL} root=/dev/mapper/pve-root ro quiet nvme_core.default_ps_max_latency_us=0 pcie_aspm=off intel_iommu=on iommu=pt initcall_blacklist=simpledrm_platform_driver_init video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9 module_blacklist=nvidia,nvidia_drm,nvidia_uvm,nvidia_modeset pve_autostart=101
+
+initrd /boot/\${LATEST_INITRD}
+
+}
+
+# --- PROFIL 2 : HOME-DEV (Standard Proxmox et démarre la VM 100) ---
+
+menuentry 'Proxmox VE - DEV (VM 100)' --class proxmox --class gnu-linux --class gnu --class os {
+
+load_video
+
+insmod gzio
+
+insmod part_gpt
+
+insmod lvm
+
+insmod ext2
+
+search --no-floppy --fs-uuid --set=root 1791833e-9ce2-4cde-aed8-4f554e9bc5b9
+
+linux /boot/\${LATEST_KERNEL} root=/dev/mapper/pve-root ro quiet pve_autostart=100
+
+initrd /boot/\${LATEST_INITRD}
+
+}
+# Tu peux rajouter autant de blocs "menuentry" que tu le souhaites ici.
+
+EOF
+
+SCRIPT_EOF
 ```
 
-Identifiants : `root` / mot de passe configuré à l'installation.
+Si vous voulez garder une seule entree dans votre grub vous pouvez modifier le grub par defaut.
+
+Vous devez changer : 
+```--set=root 1791833e-9ce2-4cde-aed8-4f554e9bc5b9``` pour qu'il corresponde à votre sortie de la commande : ``` lsblk -o NAME,FSTYPE,UUID,MOUNTPOINT ```
+![blkid](/public/images/tuto/gpu-passtrough/lsblk.jpg)
+
+ Ainsi que ```video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9```
+ Pour obtenir les bons ID utliser la commande : ``` lspci -nn | grep -E "VGA|3D|Audio" ```
+
+ Si vous etes sur un processeur amd vous devrez changer.
+
+
+ ```intel_iommu=on``` par ```amd_iommu=on```
+
+![lspci](/public/images/tuto/gpu-passtrough/lspci.jpg)
+ # /etc/default/grub
+```
+# If you change this file or any /etc/default/grub.d/*.cfg file,
+# run 'update-grub' afterwards to update /boot/grub/grub.cfg.
+# For full documentation of the options in these files, see:
+#   info -f grub -n 'Simple configuration'
+
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR=`( . /etc/os-release && echo ${NAME} )`
+GRUB_CMDLINE_LINUX_DEFAULT="quiet nvme_core.default_ps_max_latency_us=0 pcie_aspm=off amd_iommu=on iommu=pt initcall_blacklist=simpledrm_platform_driver_init video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9 module_blacklist=nvidia,nvidia_drm,nvidia_uvm,nvidia_modeset pve_autostart=101"
+GRUB_CMDLINE_LINUX=""
+
+# If your computer has multiple operating systems installed, then you
+# probably want to run os-prober. However, if your computer is a host
+# for guest OSes installed via LVM or raw disk devices, running
+# os-prober can cause damage to those guest OSes as it mounts
+# filesystems to look for things.
+#GRUB_DISABLE_OS_PROBER=false
+
+# Uncomment to enable BadRAM filtering, modify to suit your needs
+# This works with Linux (no patch required) and with any kernel that obtains
+# the memory map information from GRUB (GNU Mach, kernel of FreeBSD ...)
+#GRUB_BADRAM="0x01234567,0xfefefefe,0x89abcdef,0xefefefef"
+
+# Uncomment to disable graphical terminal
+#GRUB_TERMINAL=console
+
+# The resolution used on graphical terminal
+# note that you can use only modes which your graphic card supports via VBE/GOP/UGA
+# you can see them in real GRUB with the command `videoinfo'
+#GRUB_GFXMODE=640x480
+
+# Uncomment if you don't want GRUB to pass "root=UUID=xxx" parameter to Linux
+#GRUB_DISABLE_LINUX_UUID=true
+
+# Uncomment to disable generation of recovery mode menu entries
+#GRUB_DISABLE_RECOVERY="true"
+
+# Uncomment to get a beep at grub start
+#GRUB_INIT_TUNE="480 440 1"
+```
+
+## Étape 3 : Ajouter la carte graphique à la vm
+
+Maintenant vous pouvez ajouter la carte graphique à la vm.
+Vous devez cocher :
+Primary GPU
+Pci-express
+Rombar
+> **⚠️ Attention :** Ne pas cocher all functions.
+
+![addcg1](/public/images/tuto/gpu-passtrough/addcg1.png)
+
+![addcg1](/public/images/tuto/gpu-passtrough/addcg2.png)
 
 ---
 
 ## Conclusion
 
-Vous avez maintenant un hyperviseur Proxmox fonctionnel. Dans les prochains articles, nous verrons comment :
 
-- Créer et optimiser vos premières VMs
-- Configurer le stockage ZFS
-- Mettre en place les sauvegardes automatiques avec PBS
+
+
