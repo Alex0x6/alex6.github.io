@@ -2,7 +2,7 @@
 title: "Passthrough Nvidia GPU Proxmox without iGPU"
 date: 2025-10-15
 description: "Guide to setting up an Nvidia GPU passthrough on Proxmox."
-cover: "/public/images/tuto/gpu-passtrough/nvidia-rtx.jpg"
+cover: "/images/tuto/gpu-passtrough/nvidia-rtx.jpg"
 tags: ["proxmox", "passthrough-gpu", "nvidia", "homelab", "vfio", "grub", "gaming"]
 lang: en
 draft: false
@@ -52,14 +52,14 @@ You must modify the line `--set=root 1791833e-9ce2-4cde-aed8-4f554e9bc5b9` to ma
 lsblk -o NAME,FSTYPE,UUID,MOUNTPOINT
 ```
 
-![lsblk](/public/images/tuto/gpu-passtrough/lsblk.jpg)
+![lsblk](/images/tuto/gpu-passtrough/lsblk.jpg)
 
 You also need to adjust the parameters `video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9`.
 To get your own IDs, use the command: 
 ```bash
 lspci -nn | grep -E "VGA|3D|Audio"
 ```
-![lspci](/public/images/tuto/gpu-passtrough/lspci.jpg)
+![lspci](/images/tuto/gpu-passtrough/lspci.jpg)
 
 If you are on an AMD processor, you will need to replace:
 `intel_iommu=on` with `amd_iommu=on`.
@@ -136,7 +136,7 @@ Once again, you must modify `--set=root 1791833e-9ce2-4cde-aed8-4f554e9bc5b9` to
 lsblk -o NAME,FSTYPE,UUID,MOUNTPOINT
 ```
 
-![blkid](/public/images/tuto/gpu-passtrough/lsblk.jpg)
+![blkid](/images/tuto/gpu-passtrough/lsblk.jpg)
 
 As well as `video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9`.
 To get the correct IDs, use the command: 
@@ -147,7 +147,7 @@ lspci -nn | grep -E "VGA|3D|Audio"
 If you are on an AMD processor, you will need to change:
 `intel_iommu=on` to `amd_iommu=on`.
 
-![lspci](/public/images/tuto/gpu-passtrough/lspci.jpg)
+![lspci](/images/tuto/gpu-passtrough/lspci.jpg)
 
 ### File `/etc/default/grub`
 ```bash
@@ -202,20 +202,20 @@ You must check the following options:
 
 > **⚠ Warning:** Do NOT check *All Functions*.
 
-![addcg1](/public/images/tuto/gpu-passtrough/addcg1.png)
+![addcg1](/images/tuto/gpu-passtrough/addcg1.png)
 
-![addcg2](/public/images/tuto/gpu-passtrough/addcg2.png)
+![addcg2](/images/tuto/gpu-passtrough/addcg2.png)
 
 ## Step 4: Change the display
 
 You need to change the *Display* parameter and set it to **None**.
 
-![changedisplay](/public/images/tuto/gpu-passtrough/editdisplay.png)
+![changedisplay](/images/tuto/gpu-passtrough/editdisplay.png)
 
 ---
 ## Configuration example of my Omarchy VM
 
-![configvmomarchy](/public/images/tuto/gpu-passtrough/configvmomarchy.png)
+![configvmomarchy](/images/tuto/gpu-passtrough/configvmomarchy.png)
 
 ## Step 5: Configure the script and the service
 
