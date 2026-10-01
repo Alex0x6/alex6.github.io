@@ -33,45 +33,13 @@ const {
     <!-- Astro View Transitions (SPA-like page transitions) -->
     <ViewTransitions />
 
-    <!-- ── Gestion du thème (FOUC prevention + persistance) ───────────────── -->
+    <!-- Prévention du flash de thème (FOUC) — doit s'exécuter avant tout CSS -->
     <script is:inline>
       (function () {
-        var KEY = 'theme';
-        var root = document.documentElement;
-
-        function preferred() {
-          var s = localStorage.getItem(KEY);
-          if (s === 'dark' || s === 'light') return s;
-          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-
-        function apply(t) {
-          root.classList.toggle('dark', t === 'dark');
-          root.setAttribute('data-theme', t);
-          try { localStorage.setItem(KEY, t); } catch(e) {}
-        }
-
-        // 1. Applique immédiatement (avant toute CSS) pour éviter le flash
-        apply(preferred());
-
-        // 2. Réapplique après chaque navigation View Transitions
-        document.addEventListener('astro:after-swap', function () {
-          apply(preferred());
-        });
-
-        // 3. Suit le changement de préférence OS en temps réel
-        window.matchMedia('(prefers-color-scheme: dark)')
-          .addEventListener('change', function (e) {
-            if (!localStorage.getItem(KEY)) {
-              apply(e.matches ? 'dark' : 'light');
-            }
-          });
-
-        // 4. Expose une fonction globale utilisée par le bouton toggle
-        window.__toggleTheme = function () {
-          var next = root.classList.contains('dark') ? 'light' : 'dark';
-          apply(next);
-        };
+        var s = localStorage.getItem('theme');
+        var dark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
       })();
     </script>
   </head>
