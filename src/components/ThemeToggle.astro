@@ -1,6 +1,6 @@
 ---
 // src/components/ThemeToggle.astro
-// Dark / Light mode toggle button – vanilla JS, no external deps
+// Dark / Light mode toggle – logique complète, auto-suffisant
 ---
 
 <button
@@ -13,14 +13,12 @@
     text-gray-600 dark:text-gray-300
     hover:bg-gray-100 dark:hover:bg-gray-800
     transition-colors duration-200
-    focus-visible:ring-2 focus-visible:ring-brand-500
   "
 >
-  <!-- Sun icon (shown in dark mode) -->
+  <!-- Soleil — affiché en mode sombre -->
   <svg
-    id="icon-sun"
-    xmlns="http://www.w3.org/2000/svg"
     class="w-5 h-5 hidden dark:block"
+    xmlns="http://www.w3.org/2000/svg"
     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
     aria-hidden="true"
   >
@@ -29,11 +27,10 @@
     />
   </svg>
 
-  <!-- Moon icon (shown in light mode) -->
+  <!-- Lune — affichée en mode clair -->
   <svg
-    id="icon-moon"
-    xmlns="http://www.w3.org/2000/svg"
     class="w-5 h-5 block dark:hidden"
+    xmlns="http://www.w3.org/2000/svg"
     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
     aria-hidden="true"
   >
@@ -44,9 +41,33 @@
 </button>
 
 <script is:inline>
-  document.getElementById('theme-toggle')?.addEventListener('click', function () {
-    if (typeof window.__toggleTheme === 'function') {
-      window.__toggleTheme();
+  // Logique complète du thème — réinjectée à chaque navigation (is:inline)
+  (function () {
+    var html = document.documentElement;
+
+    function getTheme() {
+      var stored = localStorage.getItem('theme');
+      if (stored === 'dark' || stored === 'light') return stored;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-  });
+
+    function applyTheme(t) {
+      html.classList.toggle('dark', t === 'dark');
+      localStorage.setItem('theme', t);
+    }
+
+    // Applique le thème sauvegardé au chargement / après navigation
+    applyTheme(getTheme());
+
+    // Branchement du bouton — on retire l'ancien listener avant d'en ajouter un nouveau
+    var btn = document.getElementById('theme-toggle');
+    if (btn) {
+      var newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', function () {
+        var next = html.classList.contains('dark') ? 'light' : 'dark';
+        applyTheme(next);
+      });
+    }
+  })();
 </script>

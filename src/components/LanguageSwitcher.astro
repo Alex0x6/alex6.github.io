@@ -9,17 +9,25 @@ interface Props {
 
 const { currentLocale } = Astro.props;
 
-// Build alternate URL by swapping the locale prefix
-const path      = Astro.url.pathname;           // e.g. /fr/tutoriels/intro-proxmox
+// Build alternate URL: swap locale prefix + route segment
+const path      = Astro.url.pathname;
 const otherLang = currentLocale === 'fr' ? 'en' : 'fr';
-const otherPath = path.replace(
+
+let otherPath = path.replace(
   new RegExp(`^/(${currentLocale})`),
   `/${otherLang}`,
 );
 
-const labels: Record<string, { current: string; other: string; flag: string }> = {
-  fr: { current: 'FR', other: 'EN', flag: '🇬🇧' },
-  en: { current: 'EN', other: 'FR', flag: '🇫🇷' },
+// Also swap the route-segment that differs between locales
+if (currentLocale === 'fr') {
+  otherPath = otherPath.replace('/tutoriels/', '/tutorials/');
+} else {
+  otherPath = otherPath.replace('/tutorials/', '/tutoriels/');
+}
+
+const labels: Record<string, { other: string; flag: string }> = {
+  fr: { other: 'EN', flag: '🇬🇧' },
+  en: { other: 'FR', flag: '🇫🇷' },
 };
 
 const { flag, other } = labels[currentLocale] ?? labels['fr'];
