@@ -44,33 +44,9 @@
 </button>
 
 <script is:inline>
-  // Runs immediately (is:inline) to prevent FOUC
-  (function () {
-    const STORAGE_KEY = 'theme';
-    const root = document.documentElement;
-
-    function getPreferred() {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored === 'dark' || stored === 'light') return stored;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  document.getElementById('theme-toggle')?.addEventListener('click', function () {
+    if (typeof window.__toggleTheme === 'function') {
+      window.__toggleTheme();
     }
-
-    function applyTheme(t) {
-      root.classList.toggle('dark', t === 'dark');
-      localStorage.setItem(STORAGE_KEY, t);
-    }
-
-    // Apply on first load
-    applyTheme(getPreferred());
-
-    document.getElementById('theme-toggle')?.addEventListener('click', () => {
-      const next = root.classList.contains('dark') ? 'light' : 'dark';
-      applyTheme(next);
-    });
-
-    // Re-apply after Astro View Transitions
-    document.addEventListener('astro:after-swap', () => {
-      applyTheme(getPreferred());
-    });
-  })();
+  });
 </script>
