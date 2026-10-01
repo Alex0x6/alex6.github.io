@@ -31,13 +31,15 @@ export default defineConfig({
   // ── Markdown ─────────────────────────────────────────────────────────────────
   markdown: {
     shikiConfig: {
-      // Dark/light aware syntax highlighting
-      themes: {
-        light: 'github-light',
-        dark: 'github-dark',
-      },
+      // 'css-variables' permet de contrôler les couleurs via CSS (dark/light)
+      theme: 'css-variables',
       wrap: true,
     },
+  },
+
+  // ── Redirections ─────────────────────────────────────────────────────────────
+  redirects: {
+    '/': '/fr/',
   },
 
   // ── Build output ─────────────────────────────────────────────────────────────

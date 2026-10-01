@@ -56,17 +56,45 @@
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+} /* ← fermeture @layer components */
 
-  /* Shiki dual-theme support */
-  .astro-code {
-    /* light is default – applied via .shiki class */
-  }
-  .dark .astro-code {
-    background-color: transparent !important;
-  }
-  /* Shiki dual-theme: swap spans based on dark class */
-  .shiki span.light { display: inline; }
-  .shiki span.dark  { display: none; }
-  .dark .shiki span.light { display: none; }
-  .dark .shiki span.dark  { display: inline; }
+/* ── Shiki css-variables theme tokens ───────────────────────────────────────── */
+/* Mode clair */
+:root {
+  --astro-code-color-text:                #24292e;
+  --astro-code-color-background:          #f6f8fa;
+  --astro-code-token-constant:            #005cc5;
+  --astro-code-token-string:              #032f62;
+  --astro-code-token-comment:             #6a737d;
+  --astro-code-token-keyword:             #d73a49;
+  --astro-code-token-parameter:           #24292e;
+  --astro-code-token-function:            #6f42c1;
+  --astro-code-token-string-expression:   #032f62;
+  --astro-code-token-punctuation:         #24292e;
+  --astro-code-token-link:                #005cc5;
+}
+
+/* Mode sombre */
+.dark {
+  --astro-code-color-text:                #e1e4e8;
+  --astro-code-color-background:          #161b22;
+  --astro-code-token-constant:            #79b8ff;
+  --astro-code-token-string:              #9ecbff;
+  --astro-code-token-comment:             #6a737d;
+  --astro-code-token-keyword:             #f97583;
+  --astro-code-token-parameter:           #e1e4e8;
+  --astro-code-token-function:            #b392f0;
+  --astro-code-token-string-expression:   #9ecbff;
+  --astro-code-token-punctuation:         #e1e4e8;
+  --astro-code-token-link:                #79b8ff;
+}
+
+/* Style des blocs de code */
+pre.astro-code {
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  border: 1px solid var(--color-border);
 }
