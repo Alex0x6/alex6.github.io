@@ -49,23 +49,25 @@ const giscusLang = lang === 'fr' ? 'fr' : 'en';
 </section>
 
 <script is:inline>
-  // Sync giscus theme when dark mode toggles
   function syncGiscusTheme() {
-    const isDark = document.documentElement.classList.contains('dark');
-    const theme  = isDark ? 'dark' : 'light';
-    const iframe = document.querySelector('iframe.giscus-frame');
+    var isDark = document.documentElement.classList.contains('dark');
+    var theme  = isDark ? 'dark' : 'light';
+    var iframe = document.querySelector('iframe.giscus-frame');
     if (iframe) {
-      iframe.contentWindow?.postMessage(
-        { giscus: { setConfig: { theme } } },
+      iframe.contentWindow.postMessage(
+        { giscus: { setConfig: { theme: theme } } },
         'https://giscus.app'
       );
     }
   }
 
-  // Run on theme toggle clicks
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    // Small delay so the class has been toggled first
+  // Observer la classe "dark" sur <html> pour toute source de changement
+  var observer = new MutationObserver(function () {
     setTimeout(syncGiscusTheme, 50);
+  });
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
   });
 
   document.addEventListener('astro:after-swap', syncGiscusTheme);
