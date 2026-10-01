@@ -22,20 +22,15 @@ J'utilise les entrées customs du grub avec un service et un script pour pouvoir
 ## Limites de connaissances
 
 Je ne sais pas si ce tuto fonctionne sur les carte inférieurs à la série 50xx de nvidia.
-Si vous avez la possibilité de tester et de faire un retour en commentaire ou discord serait avec un immense plaisir que je partagerais les résultats.
+Si vous avez la possibilité de tester sur differents archi et de faire un retour en commentaire ou discord serait avec un immense plaisir que je partagerais les résultats.
 
 ## Explication problèmes
 
-Le probleme c'est que sans igpu ou si vous avez l'ecran branché sur la carte graphique proxmox va utiliser la carte graphique pour afficher la console avec marqué l'ip de connection et empecher de pouvoir utiliser la carte.
+Le probleme c'est que sans igpu ou si vous avez l'ecran branché sur la carte graphique proxmox va utiliser la carte graphique pour afficher la console avec marqué l'ip de connection et empecher de pouvoir utiliser la carte sur vm proprement.
 
 ## Equipements ?
 
 Sur ce tuto j'ai utilisé une rtx 5070 ti, un i5 14600kf et 64gb de ram.
-
-
-## Prérequis ?
-
-Un Proxmox
 
 ---
 
@@ -191,23 +186,84 @@ GRUB_CMDLINE_LINUX=""
 #GRUB_INIT_TUNE="480 440 1"
 ```
 
-## Étape 3 : Ajouter la carte graphique à la vm
+## Étape 3 : Ajouter la carte graphique
 
 Maintenant vous pouvez ajouter la carte graphique à la vm.
 Vous devez cocher :
-Primary GPU
-Pci-express
-Rombar
+Primary GPU;
+Pci-express;
+ROM-Bar
 > **⚠️ Attention :** Ne pas cocher all functions.
 
 ![addcg1](/public/images/tuto/gpu-passtrough/addcg1.png)
 
-![addcg1](/public/images/tuto/gpu-passtrough/addcg2.png)
+![addcg2](/public/images/tuto/gpu-passtrough/addcg2.png)
+
+## Étape 4 : Changer le display
+
+Il faut changer le display pour le passer en None.
+
+![changedisplay](/public/images/tuto/gpu-passtrough/editdisplay.png)
 
 ---
+## Exemple de param'etrages de ma vm omarchy
+
+![configvmomarchy](/public/images/tuto/gpu-passtrough/configvmomarchy.png)
+
+## Étape 5 : Configurer le script et le service
+
+> **⚠️ Attention :** les scripts sont vibes codés.
+
+Pour avoir un affichage sur notre ecran sans lancer la vm depuis l'interface de promox j'ai cree un service et un script.
+
+/etc/systemd/system/vm-autostart.service
+
+```
+[Unit]
+Description=Autostart Windows VM ONLY in Gaming Mode
+After=pve-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/start-gaming-vm.sh
+
+[Install]
+WantedBy=multi-user.target
+```
+Ensuite executer
+
+```sudo systemctl enable vm-autostart.service```
+
+/usr/local/bin/start-gaming-vm.sh
+
+```
+#!/bin/bash
+
+# On attend que l'API Proxmox soit prête
+sleep 15
+
+# On utilise grep avec une regex pour extraire le numéro derrière pve_autostart=
+VMS_TO_START=$(grep -oP 'pve_autostart=\K[0-9]+' /proc/cmdline)
+
+# Si la variable n'est pas vide (donc si on a trouvé un ordre de boot)
+if [ -n "$VMS_TO_START" ]; then
+    for VMID in $VMS_TO_START; do
+        echo "Ordre reçu de GRUB : Démarrage de la VM $VMID..."
+        qm start "$VMID"
+    done
+else
+    echo "Aucun mot-clé pve_autostart trouvé dans GRUB. Démarrage standard."
+fi
+```
+
+
 
 ## Conclusion
 
+J'espere que ce tuto vous a bien servi :).
 
+N hesiter pas a commenter et ou venir sur le discord 
+
+https://discord.gg/t2wZEk3rZm
 
 
