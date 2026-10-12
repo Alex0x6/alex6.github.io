@@ -2,29 +2,41 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
 import mdx from '@astrojs/mdx';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
   // ── GitHub Pages deployment ─────────────────────────────────────────────────
-  // Replace with your real GitHub username/repo if the repo name differs
   site: 'https://alex6.github.io',
-  // base: '/-alex6.github.io', // ← Uncomment if repo is NOT username.github.io
 
   // ── Integrations ────────────────────────────────────────────────────────────
   integrations: [
     tailwind({
-      // Let Astro handle the CSS injection; we define config in tailwind.config.mjs
       applyBaseStyles: false,
     }),
     mdx(),
+    sitemap({
+      // Exclure les pages /fr/ qui sont de simples redirections (pas le contenu canonique)
+      filter: (page) => !page.includes('/fr/'),
+      i18n: {
+        defaultLocale: 'fr',
+        locales: {
+          fr: 'fr-FR',
+          en: 'en-US',
+        },
+      },
+    }),
   ],
 
   // ── i18n ────────────────────────────────────────────────────────────────────
+  // prefixDefaultLocale: false → `/` sert le FR, `/en/` sert l'EN
+  // Meilleur pour le SEO : pas de redirection sur la page racine
   i18n: {
     defaultLocale: 'fr',
     locales: ['fr', 'en'],
     routing: {
-      prefixDefaultLocale: true, // /fr/... and /en/...
+      prefixDefaultLocale: false,
+      redirectToDefaultLocale: false,
     },
   },
 

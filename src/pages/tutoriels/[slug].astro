@@ -1,0 +1,35 @@
+---
+// src/pages/tutoriels/[slug].astro
+// Dynamic routes pour les tutoriels FR servis à /tutoriels/[slug]/
+
+import { getCollection, getEntry } from 'astro:content';
+import TutorialLayout from '../../layouts/TutorialLayout.astro';
+
+export async function getStaticPaths() {
+  const tutoriels = await getCollection('tutoriels', ({ data }) =>
+    data.lang === 'fr' && !data.draft
+  );
+
+  return tutoriels.map((entry) => ({
+    params: { slug: entry.slug.replace('fr/', '') },
+    props:  { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+const { title, description, date, tags, cover } = entry.data;
+---
+
+<TutorialLayout
+  {title}
+  {description}
+  {date}
+  locale="fr"
+  {tags}
+  cover={cover}
+>
+  <Content />
+</TutorialLayout>
+
