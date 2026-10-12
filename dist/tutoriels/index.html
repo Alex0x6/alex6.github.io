@@ -1,0 +1,126 @@
+<!DOCTYPE html><html lang="fr" class="scroll-smooth"> <head><!-- Primary --><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Tous mes tutoriels techniques : Big Data, Proxmox, Linux, homelab et plus."><link rel="canonical" href="https://alex6.github.io/tutoriels/"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><!-- Title --><title>Tutoriels | Alex6</title><!-- Open Graph --><meta property="og:type" content="website"><meta property="og:url" content="https://alex6.github.io/tutoriels/"><meta property="og:title" content="Tutoriels | Alex6"><meta property="og:description" content="Tous mes tutoriels techniques : Big Data, Proxmox, Linux, homelab et plus."><meta property="og:image" content="https://alex6.github.io/og-default.png"><!-- Twitter Card --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Tutoriels | Alex6"><meta name="twitter:description" content="Tous mes tutoriels techniques : Big Data, Proxmox, Linux, homelab et plus."><meta name="twitter:image" content="https://alex6.github.io/og-default.png"><!-- Theme color (respects OS preference) --><meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#030712"><!-- Astro View Transitions (SPA-like page transitions) --><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.CDGfc0hd.js"></script><!-- Prévention du flash de thème (FOUC) — doit s'exécuter avant tout CSS --><script>
+      (function () {
+        var s = localStorage.getItem('theme');
+        var dark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+      })();
+    </script><link rel="stylesheet" href="/_astro/_slug_.ZOap9yUC.css"></head> <body class="flex flex-col min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]"> <header class="
+  sticky top-0 z-50
+  border-b border-[var(--color-border)]
+  bg-[var(--color-bg)]/80
+  backdrop-blur-md
+  transition-colors duration-300
+"> <div class="
+    max-w-4xl mx-auto
+    flex items-center justify-between
+    px-4 sm:px-6
+    h-14
+  "> <!-- ── Logo ───────────────────────────────────────────────────────────── --> <a href="/" class="
+        font-bold text-lg tracking-tight
+        text-gray-900 dark:text-white
+        hover:text-brand-600 dark:hover:text-brand-400
+        transition-colors duration-200
+      ">
+Alex6
+</a> <!-- ── Nav + controls ─────────────────────────────────────────────────── --> <nav class="flex items-center gap-1 sm:gap-2"> <a href="/" class="
+            hidden sm:inline-flex
+            text-sm font-medium
+            px-3 py-1.5 rounded-lg
+            text-gray-600 dark:text-gray-300
+            hover:text-gray-900 dark:hover:text-white
+            hover:bg-gray-100 dark:hover:bg-gray-800
+            transition-colors duration-200
+            [&.active]:text-brand-600 dark:[&.active]:text-brand-400
+          "> Accueil </a><a href="/tutoriels/" class="
+            hidden sm:inline-flex
+            text-sm font-medium
+            px-3 py-1.5 rounded-lg
+            text-gray-600 dark:text-gray-300
+            hover:text-gray-900 dark:hover:text-white
+            hover:bg-gray-100 dark:hover:bg-gray-800
+            transition-colors duration-200
+            [&.active]:text-brand-600 dark:[&.active]:text-brand-400
+          "> Tutoriels </a> <div class="w-px h-5 bg-[var(--color-border)] mx-1 hidden sm:block" aria-hidden="true"></div> <a href="/en/tutorials/" aria-label="Passer en EN" class="
+    flex items-center gap-1.5
+    text-sm font-medium
+    text-gray-600 dark:text-gray-300
+    hover:text-gray-900 dark:hover:text-white
+    transition-colors duration-200
+    rounded-lg px-2 py-1
+    hover:bg-gray-100 dark:hover:bg-gray-800
+  "> <span aria-hidden="true">🇬🇧</span> <span>EN</span> </a> <button id="theme-toggle" aria-label="Basculer le thème / Toggle theme" title="Basculer le thème" class="
+    relative flex items-center justify-center
+    w-9 h-9 rounded-lg
+    text-gray-600 dark:text-gray-300
+    hover:bg-gray-100 dark:hover:bg-gray-800
+    transition-colors duration-200
+  "> <!-- Soleil — affiché en mode sombre --> <svg class="w-5 h-5 hidden dark:block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"> <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364-1.414 1.414M7.05 16.95l-1.414 1.414M18.364 18.364l-1.414-1.414M7.05 7.05 5.636 5.636M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path> </svg> <!-- Lune — affichée en mode clair --> <svg class="w-5 h-5 block dark:hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"> <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path> </svg> </button> <script>
+  // Logique complète du thème — réinjectée à chaque navigation (is:inline)
+  (function () {
+    var html = document.documentElement;
+
+    function getTheme() {
+      var stored = localStorage.getItem('theme');
+      if (stored === 'dark' || stored === 'light') return stored;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function applyTheme(t) {
+      html.classList.toggle('dark', t === 'dark');
+      localStorage.setItem('theme', t);
+    }
+
+    // Applique le thème sauvegardé au chargement / après navigation
+    applyTheme(getTheme());
+
+    // Branchement du bouton — on retire l'ancien listener avant d'en ajouter un nouveau
+    var btn = document.getElementById('theme-toggle');
+    if (btn) {
+      var newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', function () {
+        var next = html.classList.contains('dark') ? 'light' : 'dark';
+        applyTheme(next);
+      });
+    }
+  })();
+</script> </nav> </div> </header> <script type="module">function n(){const a=location.pathname;document.querySelectorAll("header nav a").forEach(s=>{const t=s,e=a===t.pathname||t.pathname!=="/"&&a.startsWith(t.pathname);t.classList.toggle("active",e),t.setAttribute("aria-current",e?"page":"false")})}n();document.addEventListener("astro:after-swap",n);</script> <!-- Main content --> <main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">  <header class="mb-10 fade-in"> <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
+Tutoriels
+</h1> <p class="text-[var(--color-muted)]"> 1 article publié </p> </header> <div class="grid gap-6 sm:grid-cols-2"> <article class="
+  group
+  flex flex-col
+  rounded-2xl
+  border border-[var(--color-border)]
+  bg-[var(--color-surface)]
+  overflow-hidden
+  hover:border-brand-500/50
+  hover:shadow-lg hover:shadow-brand-500/5
+  transition-all duration-300
+  fade-in
+"> <a href="/fr/tutoriels/tutoriel_passthrough_proxmox/" class="block overflow-hidden aspect-video" tabindex="-1" aria-hidden="true"> <img src="/images/tuto/gpu-passtrough/nvidia-rtx.jpg" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async"> </a> <div class="flex flex-col flex-1 p-5 sm:p-6"> <!-- Tags --> <div class="flex flex-wrap gap-1.5 mb-3"> <span class="
+            text-xs font-medium px-2 py-0.5 rounded-full
+            bg-brand-50 dark:bg-brand-900/30
+            text-brand-700 dark:text-brand-300
+          "> proxmox </span><span class="
+            text-xs font-medium px-2 py-0.5 rounded-full
+            bg-brand-50 dark:bg-brand-900/30
+            text-brand-700 dark:text-brand-300
+          "> passthrough-gpu </span><span class="
+            text-xs font-medium px-2 py-0.5 rounded-full
+            bg-brand-50 dark:bg-brand-900/30
+            text-brand-700 dark:text-brand-300
+          "> nvidia </span> </div> <!-- Title --> <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 leading-snug"> <a href="/fr/tutoriels/tutoriel_passthrough_proxmox/" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors duration-200"> Passthrough Nvidia GPU Proxmox sans iGPU </a> </h2> <!-- Description --> <p class="text-sm text-[var(--color-muted)] flex-1 line-clamp-3">Guide pour faire un passthrough GPU Nvidia sur Proxmox.</p> <!-- Footer --> <div class="mt-4 flex items-center justify-between"> <time datetime="2025-10-15T00:00:00.000Z" class="text-xs text-[var(--color-muted)]"> 15 octobre 2025 </time> <a href="/fr/tutoriels/tutoriel_passthrough_proxmox/" class="
+          text-sm font-medium
+          text-brand-600 dark:text-brand-400
+          hover:underline
+          inline-flex items-center gap-1
+        " aria-label="Lire : Passthrough Nvidia GPU Proxmox sans iGPU"> Lire → </a> </div> </div> </article> </div> </main> <!-- Footer --> <footer class="
+      border-t border-[var(--color-border)]
+      py-6 px-4
+      text-center text-xs text-[var(--color-muted)]
+    "> <p>
+© 2026 Alex6 —
+        Construit avec <a href="https://astro.build" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors" target="_blank" rel="noopener noreferrer">Astro</a> &amp;
+<a href="https://tailwindcss.com" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors" target="_blank" rel="noopener noreferrer">Tailwind</a>.
+<a href="https://github.com/Alex0x6/alex6.github.io" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors ml-2" target="_blank" rel="noopener noreferrer">GitHub ↗</a> </p> </footer> </body></html>

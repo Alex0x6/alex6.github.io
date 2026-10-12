@@ -1,0 +1,143 @@
+<!DOCTYPE html><html lang="en" class="scroll-smooth"> <head><!-- Primary --><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Alex6's personal portfolio — Big Data, homelab, systems and infra tutorials."><link rel="canonical" href="https://alex6.github.io/en/"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><!-- Title --><title>Alex6 — Portfolio | Alex6</title><!-- Open Graph --><meta property="og:type" content="website"><meta property="og:url" content="https://alex6.github.io/en/"><meta property="og:title" content="Alex6 — Portfolio | Alex6"><meta property="og:description" content="Alex6's personal portfolio — Big Data, homelab, systems and infra tutorials."><meta property="og:image" content="https://alex6.github.io/og-default.png"><!-- Twitter Card --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Alex6 — Portfolio | Alex6"><meta name="twitter:description" content="Alex6's personal portfolio — Big Data, homelab, systems and infra tutorials."><meta name="twitter:image" content="https://alex6.github.io/og-default.png"><!-- Theme color (respects OS preference) --><meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#030712"><!-- Astro View Transitions (SPA-like page transitions) --><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.CDGfc0hd.js"></script><!-- Prévention du flash de thème (FOUC) — doit s'exécuter avant tout CSS --><script>
+      (function () {
+        var s = localStorage.getItem('theme');
+        var dark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+      })();
+    </script><link rel="stylesheet" href="/_astro/_slug_.ZOap9yUC.css"></head> <body class="flex flex-col min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]"> <header class="
+  sticky top-0 z-50
+  border-b border-[var(--color-border)]
+  bg-[var(--color-bg)]/80
+  backdrop-blur-md
+  transition-colors duration-300
+"> <div class="
+    max-w-4xl mx-auto
+    flex items-center justify-between
+    px-4 sm:px-6
+    h-14
+  "> <!-- ── Logo ───────────────────────────────────────────────────────────── --> <a href="/en/" class="
+        font-bold text-lg tracking-tight
+        text-gray-900 dark:text-white
+        hover:text-brand-600 dark:hover:text-brand-400
+        transition-colors duration-200
+      ">
+Alex6
+</a> <!-- ── Nav + controls ─────────────────────────────────────────────────── --> <nav class="flex items-center gap-1 sm:gap-2"> <a href="/en/" class="
+            hidden sm:inline-flex
+            text-sm font-medium
+            px-3 py-1.5 rounded-lg
+            text-gray-600 dark:text-gray-300
+            hover:text-gray-900 dark:hover:text-white
+            hover:bg-gray-100 dark:hover:bg-gray-800
+            transition-colors duration-200
+            [&.active]:text-brand-600 dark:[&.active]:text-brand-400
+          "> Home </a><a href="/en/tutorials/" class="
+            hidden sm:inline-flex
+            text-sm font-medium
+            px-3 py-1.5 rounded-lg
+            text-gray-600 dark:text-gray-300
+            hover:text-gray-900 dark:hover:text-white
+            hover:bg-gray-100 dark:hover:bg-gray-800
+            transition-colors duration-200
+            [&.active]:text-brand-600 dark:[&.active]:text-brand-400
+          "> Tutorials </a> <div class="w-px h-5 bg-[var(--color-border)] mx-1 hidden sm:block" aria-hidden="true"></div> <a href="/" aria-label="Passer en FR" class="
+    flex items-center gap-1.5
+    text-sm font-medium
+    text-gray-600 dark:text-gray-300
+    hover:text-gray-900 dark:hover:text-white
+    transition-colors duration-200
+    rounded-lg px-2 py-1
+    hover:bg-gray-100 dark:hover:bg-gray-800
+  "> <span aria-hidden="true">🇫🇷</span> <span>FR</span> </a> <button id="theme-toggle" aria-label="Basculer le thème / Toggle theme" title="Basculer le thème" class="
+    relative flex items-center justify-center
+    w-9 h-9 rounded-lg
+    text-gray-600 dark:text-gray-300
+    hover:bg-gray-100 dark:hover:bg-gray-800
+    transition-colors duration-200
+  "> <!-- Soleil — affiché en mode sombre --> <svg class="w-5 h-5 hidden dark:block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"> <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364-1.414 1.414M7.05 16.95l-1.414 1.414M18.364 18.364l-1.414-1.414M7.05 7.05 5.636 5.636M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path> </svg> <!-- Lune — affichée en mode clair --> <svg class="w-5 h-5 block dark:hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"> <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path> </svg> </button> <script>
+  // Logique complète du thème — réinjectée à chaque navigation (is:inline)
+  (function () {
+    var html = document.documentElement;
+
+    function getTheme() {
+      var stored = localStorage.getItem('theme');
+      if (stored === 'dark' || stored === 'light') return stored;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function applyTheme(t) {
+      html.classList.toggle('dark', t === 'dark');
+      localStorage.setItem('theme', t);
+    }
+
+    // Applique le thème sauvegardé au chargement / après navigation
+    applyTheme(getTheme());
+
+    // Branchement du bouton — on retire l'ancien listener avant d'en ajouter un nouveau
+    var btn = document.getElementById('theme-toggle');
+    if (btn) {
+      var newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', function () {
+        var next = html.classList.contains('dark') ? 'light' : 'dark';
+        applyTheme(next);
+      });
+    }
+  })();
+</script> </nav> </div> </header> <script type="module">function n(){const a=location.pathname;document.querySelectorAll("header nav a").forEach(s=>{const t=s,e=a===t.pathname||t.pathname!=="/"&&a.startsWith(t.pathname);t.classList.toggle("active",e),t.setAttribute("aria-current",e?"page":"false")})}n();document.addEventListener("astro:after-swap",n);</script> <!-- Main content --> <main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">   <section class="text-center py-16 sm:py-24 fade-in"> <p class="text-brand-600 dark:text-brand-400 text-sm font-semibold tracking-widest uppercase mb-4">
+Welcome
+</p> <h1 class="text-4xl sm:text-6xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
+Hi, I'm <span class="text-brand-600 dark:text-brand-400">Alex6</span> </h1> <p class="text-lg sm:text-xl text-[var(--color-muted)] max-w-2xl mx-auto mb-10 leading-relaxed">
+Passionate about systems, Big Data, and virtualisation. I share tutorials,
+      homelab experiments and projects here.
+</p> <div class="flex flex-col sm:flex-row gap-4 justify-center"> <a href="/en/tutorials/" class="
+          inline-flex items-center justify-center gap-2
+          bg-brand-600 hover:bg-brand-700
+          text-white font-medium
+          px-6 py-3 rounded-xl
+          transition-colors duration-200
+          shadow-lg shadow-brand-500/20
+        ">
+Browse tutorials →
+</a> <a href="https://github.com/Alex0x6" target="_blank" rel="noopener noreferrer" class="
+          inline-flex items-center justify-center gap-2
+          border border-[var(--color-border)]
+          text-[var(--color-text)] font-medium
+          px-6 py-3 rounded-xl
+          hover:bg-[var(--color-surface)]
+          transition-colors duration-200
+        ">
+GitHub ↗
+</a> </div> </section> <hr class="border-[var(--color-border)] my-4"> <section class="py-12"> <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">
+What you'll find here
+</h2> <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"> <div class="
+          p-6 rounded-2xl
+          border border-[var(--color-border)]
+          bg-[var(--color-surface)]
+          hover:border-brand-500/40
+          hover:shadow-md hover:shadow-brand-500/5
+          transition-all duration-300
+        "> <div class="text-3xl mb-3">📖</div> <h3 class="font-semibold text-gray-900 dark:text-white mb-2">Technical tutorials</h3> <p class="text-sm text-[var(--color-muted)]">Step-by-step guides on Proxmox, Linux, Big Data, Kubernetes and more.</p> </div><div class="
+          p-6 rounded-2xl
+          border border-[var(--color-border)]
+          bg-[var(--color-surface)]
+          hover:border-brand-500/40
+          hover:shadow-md hover:shadow-brand-500/5
+          transition-all duration-300
+        "> <div class="text-3xl mb-3">🏠</div> <h3 class="font-semibold text-gray-900 dark:text-white mb-2">Homelab projects</h3> <p class="text-sm text-[var(--color-muted)]">Architecture, configs and lessons learned from my homelab setup.</p> </div><div class="
+          p-6 rounded-2xl
+          border border-[var(--color-border)]
+          bg-[var(--color-surface)]
+          hover:border-brand-500/40
+          hover:shadow-md hover:shadow-brand-500/5
+          transition-all duration-300
+        "> <div class="text-3xl mb-3">🛠️</div> <h3 class="font-semibold text-gray-900 dark:text-white mb-2">Tools &amp; Scripts</h3> <p class="text-sm text-[var(--color-muted)]">Useful scripts, automation and ready-to-use configurations.</p> </div> </div> </section>  </main> <!-- Footer --> <footer class="
+      border-t border-[var(--color-border)]
+      py-6 px-4
+      text-center text-xs text-[var(--color-muted)]
+    "> <p>
+© 2026 Alex6 —
+        Construit avec <a href="https://astro.build" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors" target="_blank" rel="noopener noreferrer">Astro</a> &amp;
+<a href="https://tailwindcss.com" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors" target="_blank" rel="noopener noreferrer">Tailwind</a>.
+<a href="https://github.com/Alex0x6/alex6.github.io" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors ml-2" target="_blank" rel="noopener noreferrer">GitHub ↗</a> </p> </footer> </body></html>

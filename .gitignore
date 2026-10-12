@@ -1,5 +1,4 @@
 # Astro output
-dist/
 .astro/
 
 # Node

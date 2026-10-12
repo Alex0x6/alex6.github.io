@@ -1,0 +1,375 @@
+<!DOCTYPE html><html lang="en" class="scroll-smooth"> <head><!-- Primary --><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Guide to setting up an Nvidia GPU passthrough on Proxmox."><link rel="canonical" href="https://alex6.github.io/en/tutorials/tutoriel_passthrough_proxmox/"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><!-- Title --><title>Passthrough Nvidia GPU Proxmox without iGPU | Alex6</title><!-- Open Graph --><meta property="og:type" content="website"><meta property="og:url" content="https://alex6.github.io/en/tutorials/tutoriel_passthrough_proxmox/"><meta property="og:title" content="Passthrough Nvidia GPU Proxmox without iGPU | Alex6"><meta property="og:description" content="Guide to setting up an Nvidia GPU passthrough on Proxmox."><meta property="og:image" content="/images/tuto/gpu-passtrough/nvidia-rtx.jpg"><!-- Twitter Card --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Passthrough Nvidia GPU Proxmox without iGPU | Alex6"><meta name="twitter:description" content="Guide to setting up an Nvidia GPU passthrough on Proxmox."><meta name="twitter:image" content="/images/tuto/gpu-passtrough/nvidia-rtx.jpg"><!-- Theme color (respects OS preference) --><meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#030712"><!-- Astro View Transitions (SPA-like page transitions) --><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.CDGfc0hd.js"></script><!-- Prévention du flash de thème (FOUC) — doit s'exécuter avant tout CSS --><script>
+      (function () {
+        var s = localStorage.getItem('theme');
+        var dark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+      })();
+    </script><link rel="stylesheet" href="/_astro/_slug_.ZOap9yUC.css"></head> <body class="flex flex-col min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]"> <header class="
+  sticky top-0 z-50
+  border-b border-[var(--color-border)]
+  bg-[var(--color-bg)]/80
+  backdrop-blur-md
+  transition-colors duration-300
+"> <div class="
+    max-w-4xl mx-auto
+    flex items-center justify-between
+    px-4 sm:px-6
+    h-14
+  "> <!-- ── Logo ───────────────────────────────────────────────────────────── --> <a href="/en/" class="
+        font-bold text-lg tracking-tight
+        text-gray-900 dark:text-white
+        hover:text-brand-600 dark:hover:text-brand-400
+        transition-colors duration-200
+      ">
+Alex6
+</a> <!-- ── Nav + controls ─────────────────────────────────────────────────── --> <nav class="flex items-center gap-1 sm:gap-2"> <a href="/en/" class="
+            hidden sm:inline-flex
+            text-sm font-medium
+            px-3 py-1.5 rounded-lg
+            text-gray-600 dark:text-gray-300
+            hover:text-gray-900 dark:hover:text-white
+            hover:bg-gray-100 dark:hover:bg-gray-800
+            transition-colors duration-200
+            [&.active]:text-brand-600 dark:[&.active]:text-brand-400
+          "> Home </a><a href="/en/tutorials/" class="
+            hidden sm:inline-flex
+            text-sm font-medium
+            px-3 py-1.5 rounded-lg
+            text-gray-600 dark:text-gray-300
+            hover:text-gray-900 dark:hover:text-white
+            hover:bg-gray-100 dark:hover:bg-gray-800
+            transition-colors duration-200
+            [&.active]:text-brand-600 dark:[&.active]:text-brand-400
+          "> Tutorials </a> <div class="w-px h-5 bg-[var(--color-border)] mx-1 hidden sm:block" aria-hidden="true"></div> <a href="/tutoriels/tutoriel_passthrough_proxmox/" aria-label="Passer en FR" class="
+    flex items-center gap-1.5
+    text-sm font-medium
+    text-gray-600 dark:text-gray-300
+    hover:text-gray-900 dark:hover:text-white
+    transition-colors duration-200
+    rounded-lg px-2 py-1
+    hover:bg-gray-100 dark:hover:bg-gray-800
+  "> <span aria-hidden="true">🇫🇷</span> <span>FR</span> </a> <button id="theme-toggle" aria-label="Basculer le thème / Toggle theme" title="Basculer le thème" class="
+    relative flex items-center justify-center
+    w-9 h-9 rounded-lg
+    text-gray-600 dark:text-gray-300
+    hover:bg-gray-100 dark:hover:bg-gray-800
+    transition-colors duration-200
+  "> <!-- Soleil — affiché en mode sombre --> <svg class="w-5 h-5 hidden dark:block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"> <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364-1.414 1.414M7.05 16.95l-1.414 1.414M18.364 18.364l-1.414-1.414M7.05 7.05 5.636 5.636M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path> </svg> <!-- Lune — affichée en mode clair --> <svg class="w-5 h-5 block dark:hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"> <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path> </svg> </button> <script>
+  // Logique complète du thème — réinjectée à chaque navigation (is:inline)
+  (function () {
+    var html = document.documentElement;
+
+    function getTheme() {
+      var stored = localStorage.getItem('theme');
+      if (stored === 'dark' || stored === 'light') return stored;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function applyTheme(t) {
+      html.classList.toggle('dark', t === 'dark');
+      localStorage.setItem('theme', t);
+    }
+
+    // Applique le thème sauvegardé au chargement / après navigation
+    applyTheme(getTheme());
+
+    // Branchement du bouton — on retire l'ancien listener avant d'en ajouter un nouveau
+    var btn = document.getElementById('theme-toggle');
+    if (btn) {
+      var newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', function () {
+        var next = html.classList.contains('dark') ? 'light' : 'dark';
+        applyTheme(next);
+      });
+    }
+  })();
+</script> </nav> </div> </header> <script type="module">function n(){const a=location.pathname;document.querySelectorAll("header nav a").forEach(s=>{const t=s,e=a===t.pathname||t.pathname!=="/"&&a.startsWith(t.pathname);t.classList.toggle("active",e),t.setAttribute("aria-current",e?"page":"false")})}n();document.addEventListener("astro:after-swap",n);</script> <!-- Main content --> <main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">   <a href="/en/tutorials/" class="
+      inline-flex items-center gap-1
+      text-sm text-[var(--color-muted)]
+      hover:text-brand-600 dark:hover:text-brand-400
+      transition-colors mb-8
+    "> ← Tutorials </a>  <header class="mb-8"> <div class="flex flex-wrap gap-2 mb-4"> <span class="
+            text-xs font-medium px-2.5 py-1 rounded-full
+            bg-brand-50 dark:bg-brand-900/30
+            text-brand-700 dark:text-brand-300
+          "> proxmox </span><span class="
+            text-xs font-medium px-2.5 py-1 rounded-full
+            bg-brand-50 dark:bg-brand-900/30
+            text-brand-700 dark:text-brand-300
+          "> passthrough-gpu </span><span class="
+            text-xs font-medium px-2.5 py-1 rounded-full
+            bg-brand-50 dark:bg-brand-900/30
+            text-brand-700 dark:text-brand-300
+          "> nvidia </span><span class="
+            text-xs font-medium px-2.5 py-1 rounded-full
+            bg-brand-50 dark:bg-brand-900/30
+            text-brand-700 dark:text-brand-300
+          "> homelab </span><span class="
+            text-xs font-medium px-2.5 py-1 rounded-full
+            bg-brand-50 dark:bg-brand-900/30
+            text-brand-700 dark:text-brand-300
+          "> vfio </span><span class="
+            text-xs font-medium px-2.5 py-1 rounded-full
+            bg-brand-50 dark:bg-brand-900/30
+            text-brand-700 dark:text-brand-300
+          "> grub </span><span class="
+            text-xs font-medium px-2.5 py-1 rounded-full
+            bg-brand-50 dark:bg-brand-900/30
+            text-brand-700 dark:text-brand-300
+          "> gaming </span> </div> <h1 class="
+      text-3xl sm:text-4xl font-bold
+      text-gray-900 dark:text-white
+      leading-tight mb-3
+    "> Passthrough Nvidia GPU Proxmox without iGPU </h1> <p class="text-[var(--color-muted)] text-sm"> <time datetime="2025-10-15T00:00:00.000Z">October 15, 2025</time> </p> </header>  <img src="/images/tuto/gpu-passtrough/nvidia-rtx.jpg" alt="" class="w-full rounded-2xl mb-10 aspect-video object-cover" loading="eager" decoding="async"> <article class="
+    prose prose-gray
+    dark:prose-invert
+    max-w-none
+    prose-headings:scroll-mt-20
+    prose-a:text-brand-600 dark:prose-a:text-brand-400
+    prose-code:before:content-none prose-code:after:content-none
+    prose-code:bg-gray-100 dark:prose-code:bg-gray-800
+    prose-code:text-gray-800 dark:prose-code:text-gray-100
+    prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+    prose-code:text-sm prose-code:font-mono
+  ">  <h2 id="why-this-tutorial">Why this tutorial?</h2>
+<p>I personally spent 8 hours trying to figure out why I was getting a black screen when booting my VM. Therefore, I want to share my experience to save you some time.</p>
+<h2 id="my-use-case">My Use Case</h2>
+<p>I use custom GRUB entries along with a service and a script to automatically launch my gaming VM (Windows 11) and my dev VM (Omarchy).</p>
+<h2 id="knowledge-limitations">Knowledge Limitations</h2>
+<p>I do not know if this tutorial works on GPUs older than the NVIDIA 50xx series.
+If you have the opportunity to test this on different architectures and can leave feedback in the comments or on Discord, I would be more than happy to share the results.</p>
+<h2 id="problem-explanation">Problem Explanation</h2>
+<p>The issue is that without an iGPU, or if your monitor is plugged directly into the graphics card, Proxmox will use it to display its console (along with the connection IP). This prevents you from passing the graphics card through properly to a virtual machine.</p>
+<h2 id="hardware-used">Hardware Used</h2>
+<p>For this tutorial, I used an RTX 5070 Ti, an Intel Core i5-14600KF, and 64GB of RAM.</p>
+<hr>
+<h2 id="step-1-install-your-preferred-os">Step 1: Install your preferred OS</h2>
+<p>Install the OS without adding the graphics card to the VM just yet.
+Configure the machine type to <strong>q35</strong>.
+Personally, to install the OS, I keep the default <em>Display</em> setting and configure the system via the Proxmox console.</p>
+<hr>
+<h2 id="step-2-configure-grub">Step 2: Configure GRUB</h2>
+<blockquote>
+<p><strong>⚠ Warning:</strong> the scripts are “vibe coded” (written pretty informally).</p>
+</blockquote>
+<p>Here, as you can see, the version will automatically update in GRUB with every kernel update.
+I use <code>/etc/grub.d/40_custom</code> because I am adding entries to GRUB. If you want this to apply directly to the default boot menu, use the <code>/etc/default/grub</code> file instead.</p>
+<p>I added the <code>pve_autostart</code> parameter so I can later automatically start the VM corresponding to the ID.</p>
+<p>You must modify the line <code>--set=root 1791833e-9ce2-4cde-aed8-4f554e9bc5b9</code> to match the output of your command:</p>
+<pre class="astro-code css-variables" style="background-color:var(--astro-code-background);color:var(--astro-code-foreground); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:var(--astro-code-token-function)">lsblk</span><span style="color:var(--astro-code-token-string)"> -o</span><span style="color:var(--astro-code-token-string)"> NAME,FSTYPE,UUID,MOUNTPOINT</span></span></code></pre>
+<p><img src="/images/tuto/gpu-passtrough/lsblk.jpg" alt="lsblk"></p>
+<p>You also need to adjust the parameters <code>video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9</code>.
+To get your own IDs, use the command:</p>
+<pre class="astro-code css-variables" style="background-color:var(--astro-code-background);color:var(--astro-code-foreground); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:var(--astro-code-token-function)">lspci</span><span style="color:var(--astro-code-token-string)"> -nn</span><span style="color:var(--astro-code-token-keyword)"> |</span><span style="color:var(--astro-code-token-function)"> grep</span><span style="color:var(--astro-code-token-string)"> -E</span><span style="color:var(--astro-code-token-string-expression)"> "VGA|3D|Audio"</span></span></code></pre>
+<p><img src="/images/tuto/gpu-passtrough/lspci.jpg" alt="lspci"></p>
+<p>If you are on an AMD processor, you will need to replace:
+<code>intel_iommu=on</code> with <code>amd_iommu=on</code>.</p>
+<h3 id="file-etcgrubd40_custom">File <code>/etc/grub.d/40_custom</code></h3>
+<pre class="astro-code css-variables" style="background-color:var(--astro-code-background);color:var(--astro-code-foreground); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:var(--astro-code-token-comment)">#!/bin/sh</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># Dynamic script to find the kernel</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">LATEST_KERNEL</span><span style="color:var(--astro-code-token-keyword)">=</span><span style="color:var(--astro-code-foreground)">$(</span><span style="color:var(--astro-code-token-function)">ls</span><span style="color:var(--astro-code-token-string)"> -1</span><span style="color:var(--astro-code-token-string)"> /boot/vmlinuz-*pve</span><span style="color:var(--astro-code-token-keyword)"> 2></span><span style="color:var(--astro-code-token-string)">/dev/null</span><span style="color:var(--astro-code-token-keyword)"> |</span><span style="color:var(--astro-code-token-function)"> sort</span><span style="color:var(--astro-code-token-string)"> -V</span><span style="color:var(--astro-code-token-keyword)"> |</span><span style="color:var(--astro-code-token-function)"> tail</span><span style="color:var(--astro-code-token-string)"> -n</span><span style="color:var(--astro-code-token-constant)"> 1</span><span style="color:var(--astro-code-token-keyword)"> |</span><span style="color:var(--astro-code-token-function)"> sed</span><span style="color:var(--astro-code-token-string-expression)"> 's|^/boot/||'</span><span style="color:var(--astro-code-foreground)">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">LATEST_INITRD</span><span style="color:var(--astro-code-token-keyword)">=</span><span style="color:var(--astro-code-foreground)">$(</span><span style="color:var(--astro-code-token-function)">ls</span><span style="color:var(--astro-code-token-string)"> -1</span><span style="color:var(--astro-code-token-string)"> /boot/initrd.img-*pve</span><span style="color:var(--astro-code-token-keyword)"> 2></span><span style="color:var(--astro-code-token-string)">/dev/null</span><span style="color:var(--astro-code-token-keyword)"> |</span><span style="color:var(--astro-code-token-function)"> sort</span><span style="color:var(--astro-code-token-string)"> -V</span><span style="color:var(--astro-code-token-keyword)"> |</span><span style="color:var(--astro-code-token-function)"> tail</span><span style="color:var(--astro-code-token-string)"> -n</span><span style="color:var(--astro-code-token-constant)"> 1</span><span style="color:var(--astro-code-token-keyword)"> |</span><span style="color:var(--astro-code-token-function)"> sed</span><span style="color:var(--astro-code-token-string-expression)"> 's|^/boot/||'</span><span style="color:var(--astro-code-foreground)">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">if</span><span style="color:var(--astro-code-foreground)"> [ </span><span style="color:var(--astro-code-token-keyword)">-z</span><span style="color:var(--astro-code-token-string-expression)"> "$LATEST_KERNEL"</span><span style="color:var(--astro-code-foreground)"> ]; </span><span style="color:var(--astro-code-token-keyword)">then</span><span style="color:var(--astro-code-token-function)"> exit</span><span style="color:var(--astro-code-token-constant)"> 0</span><span style="color:var(--astro-code-foreground)">; </span><span style="color:var(--astro-code-token-keyword)">fi</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-function)">cat</span><span style="color:var(--astro-code-token-keyword)"> &#x3C;&#x3C;</span><span style="color:var(--astro-code-foreground)"> EOF</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)"># --- PROFILE 1: GAMING (Passes the GPU and starts VM 101) ---</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">menuentry 'Proxmox VE - GAMING (VM 101)' --class proxmox --class gnu-linux --class gnu --class os {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">load_video</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">insmod gzio</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">insmod part_gpt</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">insmod lvm</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">insmod ext2</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">search --no-floppy --fs-uuid --set=root 1791833e-9ce2-4cde-aed8-4f554e9bc5b9</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">linux /boot/\${LATEST_KERNEL} root=/dev/mapper/pve-root ro quiet nvme_core.default_ps_max_latency_us=0 pcie_aspm=off intel_iommu=on iommu=pt initcall_blacklist=simpledrm_platform_driver_init video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9 module_blacklist=nvidia,nvidia_drm,nvidia_uvm,nvidia_modeset pve_autostart=101</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">initrd /boot/\${LATEST_INITRD}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)"># --- PROFILE 2: HOME-DEV (Standard Proxmox and starts VM 100) ---</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">menuentry 'Proxmox VE - DEV (VM 100)' --class proxmox --class gnu-linux --class gnu --class os {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">load_video</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">insmod gzio</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">insmod part_gpt</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">insmod lvm</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">insmod ext2</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">search --no-floppy --fs-uuid --set=root 1791833e-9ce2-4cde-aed8-4f554e9bc5b9</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">linux /boot/\${LATEST_KERNEL} root=/dev/mapper/pve-root ro quiet pve_autostart=100</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">initrd /boot/\${LATEST_INITRD}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-string)">}</span></span>
+<span class="line"><span style="color:var(--astro-code-token-string)"># You can add as many "menuentry" blocks as you want here.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">EOF</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-function)">SCRIPT_EOF</span></span></code></pre>
+<p>If you want to keep a single entry in your GRUB, you can modify the default GRUB.</p>
+<p>Once again, you must modify <code>--set=root 1791833e-9ce2-4cde-aed8-4f554e9bc5b9</code> to match the output of the command:</p>
+<pre class="astro-code css-variables" style="background-color:var(--astro-code-background);color:var(--astro-code-foreground); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:var(--astro-code-token-function)">lsblk</span><span style="color:var(--astro-code-token-string)"> -o</span><span style="color:var(--astro-code-token-string)"> NAME,FSTYPE,UUID,MOUNTPOINT</span></span></code></pre>
+<p><img src="/images/tuto/gpu-passtrough/lsblk.jpg" alt="blkid"></p>
+<p>As well as <code>video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9</code>.
+To get the correct IDs, use the command:</p>
+<pre class="astro-code css-variables" style="background-color:var(--astro-code-background);color:var(--astro-code-foreground); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:var(--astro-code-token-function)">lspci</span><span style="color:var(--astro-code-token-string)"> -nn</span><span style="color:var(--astro-code-token-keyword)"> |</span><span style="color:var(--astro-code-token-function)"> grep</span><span style="color:var(--astro-code-token-string)"> -E</span><span style="color:var(--astro-code-token-string-expression)"> "VGA|3D|Audio"</span></span></code></pre>
+<p>If you are on an AMD processor, you will need to change:
+<code>intel_iommu=on</code> to <code>amd_iommu=on</code>.</p>
+<p><img src="/images/tuto/gpu-passtrough/lspci.jpg" alt="lspci"></p>
+<h3 id="file-etcdefaultgrub">File <code>/etc/default/grub</code></h3>
+<pre class="astro-code css-variables" style="background-color:var(--astro-code-background);color:var(--astro-code-foreground); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:var(--astro-code-token-comment)"># If you change this file or any /etc/default/grub.d/*.cfg file,</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># run 'update-grub' afterwards to update /boot/grub/grub.cfg.</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># For full documentation of the options in these files, see:</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)">#   info -f grub -n 'Simple configuration'</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">GRUB_DEFAULT</span><span style="color:var(--astro-code-token-keyword)">=</span><span style="color:var(--astro-code-token-string)">0</span></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">GRUB_TIMEOUT</span><span style="color:var(--astro-code-token-keyword)">=</span><span style="color:var(--astro-code-token-string)">5</span></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">GRUB_DISTRIBUTOR</span><span style="color:var(--astro-code-token-keyword)">=</span><span style="color:var(--astro-code-token-string-expression)">`( </span><span style="color:var(--astro-code-token-function)">.</span><span style="color:var(--astro-code-token-string)"> /etc/os-release</span><span style="color:var(--astro-code-token-punctuation)"> &#x26;&#x26;</span><span style="color:var(--astro-code-token-function)"> echo</span><span style="color:var(--astro-code-token-string-expression)"> ${NAME} )`</span></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">GRUB_CMDLINE_LINUX_DEFAULT</span><span style="color:var(--astro-code-token-keyword)">=</span><span style="color:var(--astro-code-token-string-expression)">"quiet nvme_core.default_ps_max_latency_us=0 pcie_aspm=off amd_iommu=on iommu=pt initcall_blacklist=simpledrm_platform_driver_init video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9 module_blacklist=nvidia,nvidia_drm,nvidia_uvm,nvidia_modeset pve_autostart=101"</span></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">GRUB_CMDLINE_LINUX</span><span style="color:var(--astro-code-token-keyword)">=</span><span style="color:var(--astro-code-token-string-expression)">""</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># If your computer has multiple operating systems installed, then you</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># probably want to run os-prober. However, if your computer is a host</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># for guest OSes installed via LVM or raw disk devices, running</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># os-prober can cause damage to those guest OSes as it mounts</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># filesystems to look for things.</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)">#GRUB_DISABLE_OS_PROBER=false</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># Uncomment to enable BadRAM filtering, modify to suit your needs</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># This works with Linux (no patch required) and with any kernel that obtains</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># the memory map information from GRUB (GNU Mach, kernel of FreeBSD ...)</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)">#GRUB_BADRAM="0x01234567,0xfefefefe,0x89abcdef,0xefefefef"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># Uncomment to disable graphical terminal</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)">#GRUB_TERMINAL=console</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># The resolution used on graphical terminal</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># note that you can use only modes which your graphic card supports via VBE/GOP/UGA</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># you can see them in real GRUB with the command `videoinfo'</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)">#GRUB_GFXMODE=640x480</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># Uncomment if you don't want GRUB to pass "root=UUID=xxx" parameter to Linux</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)">#GRUB_DISABLE_LINUX_UUID=true</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># Uncomment to disable generation of recovery mode menu entries</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)">#GRUB_DISABLE_RECOVERY="true"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># Uncomment to get a beep at grub start</span></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)">#GRUB_INIT_TUNE="480 440 1"</span></span></code></pre>
+<h2 id="step-3-add-the-graphics-card">Step 3: Add the graphics card</h2>
+<p>Now, you can add the graphics card to the VM.
+You must check the following options:</p>
+<ul>
+<li><strong>Primary GPU</strong></li>
+<li><strong>PCI-Express</strong></li>
+<li><strong>ROM-Bar</strong></li>
+</ul>
+<blockquote>
+<p><strong>⚠ Warning:</strong> Do NOT check <em>All Functions</em>.</p>
+</blockquote>
+<p><img src="/images/tuto/gpu-passtrough/addcg1.png" alt="addcg1"></p>
+<p><img src="/images/tuto/gpu-passtrough/addcg2.png" alt="addcg2"></p>
+<h2 id="step-4-change-the-display">Step 4: Change the display</h2>
+<p>You need to change the <em>Display</em> parameter and set it to <strong>None</strong>.</p>
+<p><img src="/images/tuto/gpu-passtrough/editdisplay.png" alt="changedisplay"></p>
+<hr>
+<h2 id="configuration-example-of-my-omarchy-vm">Configuration example of my Omarchy VM</h2>
+<p><img src="/images/tuto/gpu-passtrough/configvmomarchy.png" alt="configvmomarchy"></p>
+<h2 id="step-5-configure-the-script-and-the-service">Step 5: Configure the script and the service</h2>
+<blockquote>
+<p><strong>⚠️ Warning:</strong> the scripts are “vibe coded”.</p>
+</blockquote>
+<p>To get a display on our screen without launching the VM from the Proxmox interface, I created a service and a script.</p>
+<h3 id="file-etcsystemdsystemvm-autostartservice">File <code>/etc/systemd/system/vm-autostart.service</code></h3>
+<pre class="astro-code css-variables" style="background-color:var(--astro-code-background);color:var(--astro-code-foreground); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="ini"><code><span class="line"><span style="color:var(--astro-code-foreground)">[Unit]</span></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">Description=</span><span style="color:var(--astro-code-foreground)">Autostart Windows VM ONLY in Gaming Mode</span></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">After=</span><span style="color:var(--astro-code-foreground)">pve-manager.service</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">[Service]</span></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">Type=</span><span style="color:var(--astro-code-foreground)">oneshot</span></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">ExecStart=</span><span style="color:var(--astro-code-foreground)">/usr/local/bin/start-gaming-vm.sh</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">[Install]</span></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">WantedBy=</span><span style="color:var(--astro-code-foreground)">multi-user.target</span></span></code></pre>
+<p>Then, run the following command:</p>
+<pre class="astro-code css-variables" style="background-color:var(--astro-code-background);color:var(--astro-code-foreground); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:var(--astro-code-token-function)">sudo</span><span style="color:var(--astro-code-token-string)"> systemctl</span><span style="color:var(--astro-code-token-string)"> enable</span><span style="color:var(--astro-code-token-string)"> vm-autostart.service</span></span></code></pre>
+<h3 id="file-usrlocalbinstart-gaming-vmsh">File <code>/usr/local/bin/start-gaming-vm.sh</code></h3>
+<pre class="astro-code css-variables" style="background-color:var(--astro-code-background);color:var(--astro-code-foreground); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:var(--astro-code-token-comment)">#!/bin/bash</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># Wait for the Proxmox API to be ready</span></span>
+<span class="line"><span style="color:var(--astro-code-token-function)">sleep</span><span style="color:var(--astro-code-token-constant)"> 15</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># Use grep with a regex to extract the number behind pve_autostart=</span></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">VMS_TO_START</span><span style="color:var(--astro-code-token-keyword)">=</span><span style="color:var(--astro-code-foreground)">$(</span><span style="color:var(--astro-code-token-function)">grep</span><span style="color:var(--astro-code-token-string)"> -oP</span><span style="color:var(--astro-code-token-string-expression)"> 'pve_autostart=\K[0-9]+'</span><span style="color:var(--astro-code-token-string)"> /proc/cmdline</span><span style="color:var(--astro-code-foreground)">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:var(--astro-code-token-comment)"># If the variable is not empty (meaning a boot order was found)</span></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">if</span><span style="color:var(--astro-code-foreground)"> [ </span><span style="color:var(--astro-code-token-keyword)">-n</span><span style="color:var(--astro-code-token-string-expression)"> "$VMS_TO_START"</span><span style="color:var(--astro-code-foreground)"> ]; </span><span style="color:var(--astro-code-token-keyword)">then</span></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">    for</span><span style="color:var(--astro-code-foreground)"> VMID </span><span style="color:var(--astro-code-token-keyword)">in</span><span style="color:var(--astro-code-foreground)"> $VMS_TO_START; </span><span style="color:var(--astro-code-token-keyword)">do</span></span>
+<span class="line"><span style="color:var(--astro-code-token-function)">        echo</span><span style="color:var(--astro-code-token-string-expression)"> "Order received from GRUB: Starting VM $VMID..."</span></span>
+<span class="line"><span style="color:var(--astro-code-token-function)">        qm</span><span style="color:var(--astro-code-token-string)"> start</span><span style="color:var(--astro-code-token-string-expression)"> "$VMID"</span></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">    done</span></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">else</span></span>
+<span class="line"><span style="color:var(--astro-code-token-function)">    echo</span><span style="color:var(--astro-code-token-string-expression)"> "No pve_autostart keyword found in GRUB. Standard boot."</span></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">fi</span></span></code></pre>
+<p>Make this script executable with the following command:</p>
+<pre class="astro-code css-variables" style="background-color:var(--astro-code-background);color:var(--astro-code-foreground); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:var(--astro-code-token-function)">sudo</span><span style="color:var(--astro-code-token-string)"> chmod</span><span style="color:var(--astro-code-token-string)"> +x</span><span style="color:var(--astro-code-token-string)"> /usr/local/bin/start-gaming-vm.sh</span></span></code></pre>
+<h2 id="step-6-update-grub-and-initramfs">Step 6: Update GRUB and initramfs</h2>
+<p>Finally, to apply all changes related to GRUB and the kernel modules, run the following commands:</p>
+<pre class="astro-code css-variables" style="background-color:var(--astro-code-background);color:var(--astro-code-foreground); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:var(--astro-code-token-function)">sudo</span><span style="color:var(--astro-code-token-string)"> update-grub</span></span>
+<span class="line"><span style="color:var(--astro-code-token-function)">sudo</span><span style="color:var(--astro-code-token-string)"> update-initramfs</span><span style="color:var(--astro-code-token-string)"> -u</span><span style="color:var(--astro-code-token-string)"> -k</span><span style="color:var(--astro-code-token-string)"> all</span></span></code></pre>
+<h2 id="conclusion">Conclusion</h2>
+<p>I hope this tutorial was helpful to you!</p>
+<p>Feel free to leave a comment or come chat about it on Discord:
+<a href="https://discord.gg/t2wZEk3rZm">https://discord.gg/t2wZEk3rZm</a></p>  </article>  <!-- Giscus container --><section class="mt-12 pt-8 border-t border-[var(--color-border)]"> <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-6"> Comments </h2> <div id="giscus-container"> <script src="https://giscus.app/client.js" data-repo="Alex0x6/alex6.github.io" data-repo-id="R_kgDOUzuhVg" data-category="Announcements" data-category-id="DIC_kwDOUzuhVs4DGrWu" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="en" data-loading="lazy" crossorigin="anonymous" async></script> </div> </section> <script>
+  function syncGiscusTheme() {
+    var isDark = document.documentElement.classList.contains('dark');
+    var theme  = isDark ? 'dark' : 'light';
+    var iframe = document.querySelector('iframe.giscus-frame');
+    if (iframe) {
+      iframe.contentWindow.postMessage(
+        { giscus: { setConfig: { theme: theme } } },
+        'https://giscus.app'
+      );
+    }
+  }
+
+  // Observer la classe "dark" sur <html> pour toute source de changement
+  var observer = new MutationObserver(function () {
+    setTimeout(syncGiscusTheme, 50);
+  });
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
+
+  document.addEventListener('astro:after-swap', syncGiscusTheme);
+</script>  </main> <!-- Footer --> <footer class="
+      border-t border-[var(--color-border)]
+      py-6 px-4
+      text-center text-xs text-[var(--color-muted)]
+    "> <p>
+© 2026 Alex6 —
+        Construit avec <a href="https://astro.build" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors" target="_blank" rel="noopener noreferrer">Astro</a> &amp;
+<a href="https://tailwindcss.com" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors" target="_blank" rel="noopener noreferrer">Tailwind</a>.
+<a href="https://github.com/Alex0x6/alex6.github.io" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors ml-2" target="_blank" rel="noopener noreferrer">GitHub ↗</a> </p> </footer> </body></html>
