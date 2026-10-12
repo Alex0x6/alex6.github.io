@@ -1,36 +1,29 @@
 ---
 // src/pages/fr/tutoriels/[slug].astro
-// Dynamic routes for individual French tutorial articles
+// Redirige /fr/tutoriels/[slug]/ → /tutoriels/[slug]/
 
-import { getCollection, getEntry } from 'astro:content';
-import TutorialLayout from '../../../layouts/TutorialLayout.astro';
-
-// Generate a static route for every French tutorial
 export async function getStaticPaths() {
-  const tutoriels = await getCollection('tutoriels', ({ data }) =>
+  const { getCollection } = await import('astro:content');
+  const tutoriels = await getCollection('tutoriels', ({ data }: { data: any }) =>
     data.lang === 'fr' && !data.draft
   );
-
-  return tutoriels.map((entry) => ({
-    // Remove the "fr/" prefix that comes from the folder structure
+  return tutoriels.map((entry: any) => ({
     params: { slug: entry.slug.replace('fr/', '') },
-    props:  { entry },
+    props:  { slug: entry.slug.replace('fr/', '') },
   }));
 }
 
-const { entry } = Astro.props;
-const { Content } = await entry.render();
-
-const { title, description, date, tags, cover } = entry.data;
+const { slug } = Astro.props;
+const targetUrl = `/tutoriels/${slug}/`;
 ---
-
-<TutorialLayout
-  {title}
-  {description}
-  {date}
-  locale="fr"
-  {tags}
-  cover={cover}
->
-  <Content />
-</TutorialLayout>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Redirection…</title>
+    <link rel="canonical" href={`https://alex6.github.io/tutoriels/${slug}/`} />
+    <meta http-equiv="refresh" content={`0;url=${targetUrl}`} />
+  </head>
+  <body>
+    <a href={targetUrl}>Redirection vers le tutoriel…</a>
+  </body>
+</html>

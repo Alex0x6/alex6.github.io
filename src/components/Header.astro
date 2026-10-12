@@ -13,14 +13,18 @@ const { currentLocale } = Astro.props;
 const locale = currentLocale ?? 'fr';
 
 // Nav links per locale
+// With prefixDefaultLocale: false, FR is served at / (no /fr/ prefix)
+const frBase = '';
+const enBase = '/en';
+
 const nav = {
   fr: [
-    { href: `/${locale}/`,            label: 'Accueil'    },
-    { href: `/${locale}/tutoriels/`,  label: 'Tutoriels'  },
+    { href: `${frBase}/`,            label: 'Accueil'    },
+    { href: `${frBase}/tutoriels/`,  label: 'Tutoriels'  },
   ],
   en: [
-    { href: `/${locale}/`,            label: 'Home'       },
-    { href: `/${locale}/tutorials/`,  label: 'Tutorials'  },
+    { href: `${enBase}/`,            label: 'Home'       },
+    { href: `${enBase}/tutorials/`,  label: 'Tutorials'  },
   ],
 }[locale] ?? [];
 ---
@@ -41,7 +45,7 @@ const nav = {
 
     <!-- ── Logo ───────────────────────────────────────────────────────────── -->
     <a
-      href={`/${locale}/`}
+      href={locale === 'fr' ? '/' : `${enBase}/`}
       class="
         font-bold text-lg tracking-tight
         text-gray-900 dark:text-white
