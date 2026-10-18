@@ -77,25 +77,25 @@ if [ -z "$LATEST_KERNEL" ]; then exit 0; fi
 cat << EOF
 # --- PROFIL 1 : GAMING (Passe le GPU et démarre la VM 101) ---
 menuentry 'Proxmox VE - GAMING (VM 101)' --class proxmox --class gnu-linux --class gnu --class os {
-    load_video
-    insmod gzio
-    insmod part_gpt
-    insmod lvm
-    insmod ext2
-    search --no-floppy --fs-uuid --set=root 96ffb594-9cb7-43ec-ae31-20f953df5955
-    linux /boot/${LATEST_KERNEL} root=/dev/mapper/pve-root ro quiet nvme_core.default_ps_max_latency_us=0 pcie_aspm=off intel_iommu=on iommu=pt initcall_blacklist=simpledrm_platform_driver_init video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9 module_blacklist=nvidia,nvidia_drm,nvidia_uvm,nvidia_modeset pve_autostart=101
-    initrd /boot/${LATEST_INITRD}
+load_video
+insmod gzio
+insmod part_gpt
+insmod lvm
+insmod ext2
+search --no-floppy --fs-uuid --set=root 96ffb594-9cb7-43ec-ae31-20f953df5955
+linux /boot/${LATEST_KERNEL} root=/dev/mapper/pve-root ro quiet nvme_core.default_ps_max_latency_us=0 pcie_aspm=off intel_iommu=on iommu=pt initcall_blacklist=simpledrm_platform_driver_init video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9 module_blacklist=nvidia,nvidia_drm,nvidia_uvm,nvidia_modeset pve_autostart=101
+initrd /boot/${LATEST_INITRD}
 }
 
 # --- PROFIL 2 : HOME-DEV (Standard Proxmox et démarre la VM 100) ---
 menuentry 'Proxmox VE - DEV (VM 100)' --class proxmox --class gnu-linux --class gnu --class os {
-    load_video
-    insmod gzio
-    insmod part_gpt
-    insmod lvm
-    insmod ext2
-    linux /boot/${LATEST_KERNEL} root=/dev/mapper/pve-root ro quiet nvme_core.default_ps_max_latency_us=0 pcie_aspm=off intel_iommu=on iommu=pt initcall_blacklist=simpledrm_platform_driver_init video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9 module_blacklist=nvidia,nvidia_drm,nvidia_uvm,nvidia_modeset pve_autostart=100
-    initrd /boot/${LATEST_INITRD}
+load_video
+insmod gzio
+insmod part_gpt
+insmod lvm
+insmod ext2
+linux /boot/${LATEST_KERNEL} root=/dev/mapper/pve-root ro quiet nvme_core.default_ps_max_latency_us=0 pcie_aspm=off intel_iommu=on iommu=pt initcall_blacklist=simpledrm_platform_driver_init video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9 module_blacklist=nvidia,nvidia_drm,nvidia_uvm,nvidia_modeset pve_autostart=100
+initrd /boot/${LATEST_INITRD}
 }
 EOF
 ```
