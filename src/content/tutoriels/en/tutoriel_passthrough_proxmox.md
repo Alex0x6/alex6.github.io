@@ -125,8 +125,6 @@ initrd /boot/\${LATEST_INITRD}
 # You can add as many "menuentry" blocks as you want here.
 
 EOF
-
-SCRIPT_EOF
 ```
 
 If you want to keep a single entry in your GRUB, you can modify the default GRUB.
