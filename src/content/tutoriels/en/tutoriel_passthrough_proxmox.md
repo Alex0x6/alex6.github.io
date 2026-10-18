@@ -68,62 +68,35 @@ If you are on an AMD processor, you will need to replace:
 ### File `/etc/grub.d/40_custom`
 ```bash
 #!/bin/sh
-
-# Dynamic script to find the kernel
-
+# Script dynamique pour trouver le noyau
 LATEST_KERNEL=$(ls -1 /boot/vmlinuz-*pve 2>/dev/null | sort -V | tail -n 1 | sed 's|^/boot/||')
-
 LATEST_INITRD=$(ls -1 /boot/initrd.img-*pve 2>/dev/null | sort -V | tail -n 1 | sed 's|^/boot/||')
 
 if [ -z "$LATEST_KERNEL" ]; then exit 0; fi
 
 cat << EOF
-
-# --- PROFILE 1: GAMING (Passes the GPU and starts VM 101) ---
-
+# --- PROFIL 1 : GAMING (Passe le GPU et démarre la VM 101) ---
 menuentry 'Proxmox VE - GAMING (VM 101)' --class proxmox --class gnu-linux --class gnu --class os {
-
-load_video
-
-insmod gzio
-
-insmod part_gpt
-
-insmod lvm
-
-insmod ext2
-
-search --no-floppy --fs-uuid --set=root 1791833e-9ce2-4cde-aed8-4f554e9bc5b9
-
-linux /boot/\${LATEST_KERNEL} root=/dev/mapper/pve-root ro quiet nvme_core.default_ps_max_latency_us=0 pcie_aspm=off intel_iommu=on iommu=pt initcall_blacklist=simpledrm_platform_driver_init video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9 module_blacklist=nvidia,nvidia_drm,nvidia_uvm,nvidia_modeset pve_autostart=101
-
-initrd /boot/\${LATEST_INITRD}
-
+    load_video
+    insmod gzio
+    insmod part_gpt
+    insmod lvm
+    insmod ext2
+    search --no-floppy --fs-uuid --set=root 96ffb594-9cb7-43ec-ae31-20f953df5955
+    linux /boot/${LATEST_KERNEL} root=/dev/mapper/pve-root ro quiet nvme_core.default_ps_max_latency_us=0 pcie_aspm=off intel_iommu=on iommu=pt initcall_blacklist=simpledrm_platform_driver_init video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9 module_blacklist=nvidia,nvidia_drm,nvidia_uvm,nvidia_modeset pve_autostart=101
+    initrd /boot/${LATEST_INITRD}
 }
 
-# --- PROFILE 2: HOME-DEV (Standard Proxmox and starts VM 100) ---
-
+# --- PROFIL 2 : HOME-DEV (Standard Proxmox et démarre la VM 100) ---
 menuentry 'Proxmox VE - DEV (VM 100)' --class proxmox --class gnu-linux --class gnu --class os {
-
-load_video
-
-insmod gzio
-
-insmod part_gpt
-
-insmod lvm
-
-insmod ext2
-
-search --no-floppy --fs-uuid --set=root 1791833e-9ce2-4cde-aed8-4f554e9bc5b9
-
-linux /boot/\${LATEST_KERNEL} root=/dev/mapper/pve-root ro quiet pve_autostart=100
-
-initrd /boot/\${LATEST_INITRD}
-
+    load_video
+    insmod gzio
+    insmod part_gpt
+    insmod lvm
+    insmod ext2
+    linux /boot/${LATEST_KERNEL} root=/dev/mapper/pve-root ro quiet nvme_core.default_ps_max_latency_us=0 pcie_aspm=off intel_iommu=on iommu=pt initcall_blacklist=simpledrm_platform_driver_init video=efifb:off vfio-pci.ids=10de:2c05,10de:22e9 module_blacklist=nvidia,nvidia_drm,nvidia_uvm,nvidia_modeset pve_autostart=100
+    initrd /boot/${LATEST_INITRD}
 }
-# You can add as many "menuentry" blocks as you want here.
-
 EOF
 ```
 
